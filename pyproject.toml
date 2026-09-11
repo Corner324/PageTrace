@@ -92,9 +92,16 @@ exclude_also = ["if TYPE_CHECKING:", "raise NotImplementedError"]
 
 # ---------------------------------------------------------------- mutmut
 [tool.mutmut]
-# The invariant engine and the two modules it rests on. Renderers and argparse wiring are not
-# worth the budget (docs/testing.md).
-paths_to_mutate = ["src/pagetrace/checks/", "src/pagetrace/normalize.py", "src/pagetrace/model.py"]
+# mutmut copies the whole source tree into `mutants/` and imports it from there, so the package
+# has to be named whole: naming only the interesting submodules leaves the copy missing the ones
+# the tests import.
+source_paths = ["src/pagetrace/"]
+# Renderers and argparse wiring are not worth the budget (docs/testing.md).
+do_not_mutate = [
+  "src/pagetrace/render/*",
+  "src/pagetrace/cli.py",
+  "src/pagetrace/__main__.py",
+]
 # Unit tests only: a mutant has to be killed hundreds of times over, and the property suite takes
 # seconds per run. The property tests still guard the same code in CI, just not once per mutant.
-tests_dir = ["tests/unit/"]
+pytest_add_cli_args_test_selection = ["tests/unit/"]

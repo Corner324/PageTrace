@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 180" width="880" height="180" role="img" aria-label="pagetrace">
+  <style>
+    .ink   { fill: #111a1d; }
+    .line  { stroke: #111a1d; }
+    .faint { stroke: #111a1d; opacity: .3; }
+    .acc   { stroke: #c0543c; }
+    .accf  { fill: #c0543c; }
+    @media (prefers-color-scheme: dark) {
+      .ink   { fill: #e9eff1; }
+      .line  { stroke: #e9eff1; }
+      .faint { stroke: #e9eff1; opacity: .35; }
+      .acc   { stroke: #e08a70; }
+      .accf  { fill: #e08a70; }
+    }
+    text { font-family: ui-monospace, "SFMono-Regular", "DejaVu Sans Mono", Menlo, Consolas, monospace; }
+  </style>
+
+  <text class="ink" x="440" y="92" font-size="72" font-weight="700" letter-spacing="-2" text-anchor="middle">pagetrace</text>
+
+  <g fill="none" stroke-width="3" stroke-linecap="round">
+    <path class="faint" d="M164 128 h136"/>
+    <path class="faint" d="M336 128 h92"/>
+    <path class="acc"   d="M464 128 h44" stroke-dasharray="6 8"/>
+    <path class="faint" d="M544 128 h172"/>
+  </g>
+
+  <g stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <circle class="line" cx="164" cy="128" r="5" fill="none"/>
+    <circle class="line" cx="318" cy="128" r="5" fill="none"/>
+    <circle class="line" cx="446" cy="128" r="5" fill="none"/>
+    <path  class="acc" d="M519 120 l10 8 -10 8"/>
+    <circle class="line" cx="716" cy="128" r="5" fill="none"/>
+  </g>
+
+  <path class="accf" d="M526 148 h6 v14 h-6 z" opacity="0"/>
+</svg>
