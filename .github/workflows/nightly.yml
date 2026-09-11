@@ -12,7 +12,7 @@ jobs:
   extended-pbt:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v6
       - run: uv sync
       - run: uv run pytest -m "" tests/property tests/unit
@@ -23,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true  # advisory until a baseline exists (docs/testing.md)
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v6
       - run: uv sync
       - run: uv run mutmut run || true
@@ -32,7 +32,7 @@ jobs:
   benchmarks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v6
       - run: uv sync
       - run: uv run python -m benchmarks.bench_pipeline --json benchmark-results/nightly.json
@@ -45,7 +45,7 @@ jobs:
     runs-on: ubuntu-latest
     continue-on-error: true
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.15"
