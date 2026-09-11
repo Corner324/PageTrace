@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from pagetrace.model import Certainty, Finding, Trace
+from pagetrace.model import Certainty, Finding, Trace, escape_control
 from pagetrace.render import display
 
 # A systematic misconfiguration can mismatch every transition. The JSON report keeps all of
@@ -11,7 +11,10 @@ MAX_SHOWN_PER_CODE = 10
 
 
 def render_terminal(trace: Trace, findings: list[Finding], source: str) -> str:
-    lines = [f"{source}: {trace.page_count} pages, preset {trace.preset}", ""]
+    # The trace filename is not an observation, so it never passed through display(); it is
+    # still user-supplied text on its way to a terminal.
+    header = f"{escape_control(source)}: {trace.page_count} pages, preset {trace.preset}"
+    lines = [header, ""]
 
     if not findings:
         lines.append("No findings. Nothing observable in this trace violates an invariant.")

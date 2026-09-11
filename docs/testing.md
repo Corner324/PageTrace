@@ -30,7 +30,7 @@ so `spec -> detector -> tests` can be grepped.
   `set_has_more_true_on_final_page`, `duplicate_response`, `corrupt_total`. After each mutation:
   the expected detector fires, evidence points at the right pages, unrelated detectors stay silent.
 - Cursor cycles of length 1, 2, 3, N; starting at page 0, halfway, and after a long prefix.
-- Large traces (thousands of pages) are generated, never stored as fixtures.
+- Traces of up to 60 pages are generated per example, never stored as fixtures. Cost at thousands of pages is a benchmark question, not a property one: see docs/performance.md.
 
 Profiles live in `tests/conftest.py`: `pr` (200 examples, derandomized) and `nightly`
 (5000 examples, random seeds). Select with `HYPOTHESIS_PROFILE=nightly`.

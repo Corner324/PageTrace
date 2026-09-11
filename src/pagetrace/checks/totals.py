@@ -33,18 +33,10 @@ def check_total_discrepancy(trace: Trace) -> Iterator[Finding]:
 
     declared = _stable_total(pages)
     if declared is None:
-        if _total_changes(pages):
-            yield insufficient(
-                code="TOTAL_CHANGED_BETWEEN_PAGES",
-                invariant="INV-TOTAL-001",
-                message=(
-                    "The declared total changed between pages, so the dataset moved while it "
-                    "was being paginated. No comparison is possible."
-                ),
-                evidence=tuple(page.evidence(page.total) for page in pages if page.total.observed)[
-                    :5
-                ],
-            )
+        # A total that changes between pages, or that is observed as something other than an
+        # integer, is reported as nothing at all: INV-TOTAL-001 says the dataset moved under the
+        # paginator and no comparison is possible, and an insufficient-evidence finding would
+        # still be a statement about a total this detector may not reason about.
         return
 
     if not all(page.items.observed for page in pages):
@@ -83,10 +75,6 @@ def check_total_discrepancy(trace: Trace) -> Iterator[Finding]:
         certainty=Certainty.PROVEN if exact else Certainty.SUSPICIOUS,
         severity=Severity.WARNING,
         message=_message(
-            declared,
-            raw,
-            distinct,
-            len(pages),
             exact=exact,
             duplicates=has_duplicates,
             failed_requests=trace.page_count - len(pages),
@@ -113,42 +101,18 @@ def _stable_total(pages: list[Page]) -> int | None:
     return values.pop() if len(values) == 1 else None
 
 
-def _total_changes(pages: list[Page]) -> bool:
-    """The declared total is observed more than once and does not agree with itself."""
-    declared = [page.total for page in pages if page.total.observed]
-    if len(declared) < 2:
-        return False
-    return len({observation.text for observation in declared}) > 1
-
-
-def _message(
-    declared: int,
-    raw: int,
-    distinct: int,
-    page_count: int,
-    *,
-    exact: bool,
-    duplicates: bool,
-    failed_requests: int = 0,
-) -> str:
-    if exact:
-        counted = f"{distinct} distinct items"
-    elif distinct:
-        counted = f"{raw} items, {distinct} of which could be told apart,"
-    else:
-        # "0 of them distinct" would read as a count of items rather than as the absence of
-        # observable identity.
-        counted = f"{raw} items, none of which carried an observable identity,"
+def _message(*, exact: bool, duplicates: bool, failed_requests: int = 0) -> str:
+    """Static wording. Every number lives in the evidence (global precondition 8)."""
     message = (
-        f"The trace declares a total of {declared}, and {counted} were observed across "
-        f"{page_count} pages. PageTrace does not know whether the total counts the same "
-        f"population under the same filters, so this is a difference between two numbers, not "
-        f"a count of records that went missing."
+        "The total declared by the trace and the items observed across it are not the same "
+        "number; both counts are in the evidence below. PageTrace does not know whether the "
+        "total counts the same population under the same filters, so this is a difference "
+        "between two numbers, not a count of records that went missing."
     )
     if failed_requests:
         message += (
-            f" {failed_requests} request(s) in this trace did not return a result page, so a "
-            f"window of items was never observed."
+            " At least one request in this trace did not return a result page, so a window of "
+            "items was never observed."
         )
     if duplicates:
         message += (

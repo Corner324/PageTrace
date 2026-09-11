@@ -8,6 +8,10 @@ from pagetrace.model import Certainty, Evidence, Finding, Page, Severity, Trace
 
 Check = Callable[[Trace], Iterable[Finding]]
 
+# The presets whose pagination state is a continuation token. Three detector families need it,
+# so it lives here rather than in one of them (docs/architecture.md: no detector imports another).
+CURSOR_PRESETS = frozenset({"cursor", "link"})
+
 
 def transitions(trace: Trace) -> Iterator[tuple[Page, Page]]:
     """Consecutive page pairs. A pair touching a non-2xx page is not yielded.

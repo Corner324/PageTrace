@@ -4,8 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 
-from pagetrace.checks.base import insufficient, transitions
-from pagetrace.checks.cursors import CURSOR_PRESETS
+from pagetrace.checks.base import CURSOR_PRESETS, insufficient, transitions
 from pagetrace.model import Certainty, Evidence, Finding, Page, Severity, Trace
 
 
@@ -35,8 +34,9 @@ def check_page_progression(trace: Trace) -> Iterator[Finding]:
             certainty=Certainty.PROVEN,
             severity=Severity.ERROR,
             message=(
-                f"The requested page number went from {before} on page {earlier.index} to "
-                f"{after} on page {later.index}, a change of {delta} instead of 1."
+                f"The requested page number changed by something other than 1 between pages "
+                f"{earlier.index} and {later.index}. Both page numbers and the change between "
+                f"them are in the evidence below."
             ),
             affected_pages=(earlier.index, later.index),
             evidence=(
@@ -98,9 +98,9 @@ def check_offset_progression(trace: Trace) -> Iterator[Finding]:
             certainty=Certainty.PROVEN if proven else Certainty.SUSPICIOUS,
             severity=Severity.ERROR,
             message=(
-                f"Page {later.index} was requested with offset {after}; page {earlier.index} "
-                f"started at {before} and returned {expected - before} items, so {expected} "
-                f"was expected."
+                f"Page {later.index} was requested with an offset other than the one page "
+                f"{earlier.index} implies: its own offset plus the number of items it returned. "
+                f"Both offsets and the expected value are in the evidence below."
                 + (
                     ""
                     if proven

@@ -9,7 +9,7 @@ from typing import Any
 from urllib.parse import parse_qsl, urlsplit
 
 from pagetrace.errors import PageTraceError
-from pagetrace.inputs import as_object, filter_headers, iter_lines
+from pagetrace.inputs import as_object, filter_headers, iter_lines, load_json
 from pagetrace.limits import MAX_LINE_BYTES
 from pagetrace.model import RawObservation, canonical_text
 
@@ -46,9 +46,13 @@ def _decode(raw: bytes, line_number: int) -> str:
 
 def _parse_object(text: str, line_number: int) -> dict[str, Any]:
     try:
-        value: object = json.loads(text)
+        value: object = load_json(text)
     except json.JSONDecodeError as exc:
         raise PageTraceError(f"line {line_number}: invalid JSON: {exc.msg}") from exc
+    except ValueError as exc:
+        # A syntactically valid number CPython refuses to build, such as an integer longer than
+        # sys.int_max_str_digits, or a NaN token load_json rejects. Both are usage errors.
+        raise PageTraceError(f"line {line_number}: invalid JSON: {exc}") from exc
     except RecursionError as exc:
         raise PageTraceError(f"line {line_number}: JSON nested too deeply") from exc
 

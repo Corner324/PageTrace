@@ -5,6 +5,7 @@ Every parser yields `RawObservation` and raises only `PageTraceError`, never a t
 
 from __future__ import annotations
 
+import json
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any, cast
@@ -26,6 +27,20 @@ def read_trace(path: Path, input_format: str) -> list[RawObservation]:
     resolved = detect_format(path) if input_format == "auto" else input_format
     reader = read_jsonl if resolved == "jsonl" else read_har
     return list(reader(path))
+
+
+def load_json(text: str) -> object:
+    """Parse JSON the way RFC 8259 defines it, not the way CPython extends it.
+
+    `json.loads` accepts `NaN`, `Infinity` and `-Infinity`, which are not JSON. Left in, such a
+    value travels through the model and comes back out in a report that no strict parser can
+    read, and that does not match the published schema. It is rejected at the boundary instead.
+    """
+    return json.loads(text, parse_constant=_reject_constant)
+
+
+def _reject_constant(name: str) -> float:
+    raise ValueError(f"{name} is not valid JSON")
 
 
 def detect_format(path: Path) -> str:

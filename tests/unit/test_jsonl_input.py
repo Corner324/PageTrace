@@ -195,3 +195,21 @@ def test_read_trace_dispatches_to_the_har_reader(tmp_path: Path) -> None:
     path.write_text("{}", encoding="utf-8")
     with pytest.raises(PageTraceError, match="no HAR log object"):
         read_trace(path, "auto")
+
+
+def test_an_integer_too_long_for_cpython_is_a_usage_error(tmp_path: Path) -> None:
+    """Syntactically valid JSON, but `int()` refuses it. Used to escape as a ValueError."""
+    record = '{"v": 1, "request": {"url": "u"}, "response": {"status": ' + "9" * 5000 + "}}"
+
+    with pytest.raises(PageTraceError, match="invalid JSON"):
+        read(tmp_path, record)
+
+
+@pytest.mark.parametrize("token", ["NaN", "Infinity", "-Infinity"])
+def test_json_constants_python_invents_are_rejected(tmp_path: Path, token: str) -> None:
+    """RFC 8259 has no NaN. Accepting one produces a report no strict parser can read."""
+    body = f'{{"next": {token}}}'
+    record = f'{{"v": 1, "request": {{"url": "u"}}, "response": {{"status": 200, "body": {body}}}}}'
+
+    with pytest.raises(PageTraceError, match="invalid JSON"):
+        read(tmp_path, record)

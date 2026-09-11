@@ -4,10 +4,8 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 
-from pagetrace.checks.base import insufficient, transitions
+from pagetrace.checks.base import CURSOR_PRESETS, insufficient, transitions
 from pagetrace.model import Certainty, Finding, Severity, Trace
-
-CURSOR_PRESETS = frozenset({"cursor", "link"})
 
 # How many intermediate cursors a cycle finding carries as evidence before it stops being
 # evidence and starts being a dump.
@@ -77,7 +75,13 @@ def check_cursor_stalled(trace: Trace) -> Iterator[Finding]:
         return
 
     reported: set[str] = set()
+    unobserved = 0
     for earlier, later in transitions(trace):
+        if not earlier.request_cursor.observed and not later.request_cursor.observed:
+            # Neither side carries the pagination state, so the transition was not checked.
+            # One side missing is ordinary: page 0 has no incoming cursor.
+            unobserved += 1
+            continue
         if not earlier.request_cursor.same_as(later.request_cursor):
             continue
         stalled_on = earlier.request_cursor.text
@@ -100,6 +104,16 @@ def check_cursor_stalled(trace: Trace) -> Iterator[Finding]:
             ),
             affected_pages=(earlier.index, later.index),
             evidence=tuple(evidence),
+        )
+
+    if unobserved:
+        yield insufficient(
+            code="CURSOR_STALL_NOT_OBSERVABLE",
+            invariant="INV-CURSOR-002",
+            message=(
+                f"{unobserved} transitions carried no observable request cursor on either side, "
+                f"so whether the pagination state advanced was not checked. Check --cursor."
+            ),
         )
 
 

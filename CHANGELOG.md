@@ -39,8 +39,7 @@ JSON `schema_version` and the JSONL v1 input format are a public contract
 
 ### Security
 
-- Response headers are allowlisted to `link` and `content-type`; request headers never reach the
-  model. Bodies are never rendered, only selected scalars, escaped and truncated.
+- Exactly one response header, `link`, reaches the model; request headers never do. Bodies are never rendered, only selected scalars, escaped and truncated.
 - Input limits on line length and decoded body size; nesting bombs and invalid UTF-8 are usage
   errors, never tracebacks.
 - No networking code or dependency exists in the package.
@@ -75,6 +74,38 @@ fixed with a regression test naming what the defect used to do
 - `exit 1` now requires a finding that is both `PROVEN` and `ERROR`. A duplicate item is a
   proven observation whose meaning the finding itself declines to assert, and failing a build on
   it would be the tool claiming what its message refuses to.
+
+### Correctness fixes found by a second, independent audit
+
+A fresh audit of the whole repository, again starting from the specification, found four more
+defects and several documented claims the code did not keep.
+
+- A declared total that changes between pages now reports nothing at all, as INV-TOTAL-001
+  requires. It used to emit an insufficient-evidence finding whose message asserted that the
+  dataset had moved, which the trace does not show.
+- INV-CONT-002 and INV-CURSOR-002 now report missing evidence instead of staying silent when the
+  items array, or the request cursor on both sides of a transition, could not be observed.
+  Silence there looked like a check that had passed.
+- Page-number, offset and total findings no longer interpolate selected values into their
+  messages. Every number travels in `evidence`, where it is escaped and truncated
+  (global precondition 8).
+- `CURSOR_PRESETS` moved to `checks/base.py`; no detector imports another any more.
+
+### Security fixes
+
+- A JSON integer longer than CPython will build (`sys.int_max_str_digits`) used to escape the
+  parser as an uncaught `ValueError`. It is a usage error now, like every other bad input.
+- `NaN`, `Infinity` and `-Infinity` are rejected at both parsers. CPython accepts them; JSON
+  does not, and a report carrying one matched neither the schema nor a strict parser.
+- The trace filename in the terminal header, and every error on its way to stderr, are escaped.
+  Neither is an observation, so neither passed through `render.display`.
+
+### Contract and release
+
+- The JSON schema now requires the `input` block and its three fields. The renderer always
+  wrote them; the schema could not catch their loss.
+- The release workflow fails when the tag and `project.version` disagree, and runs the benchmark
+  smoke that `docs/performance.md` says a release blocks on.
 
 ### Performance
 

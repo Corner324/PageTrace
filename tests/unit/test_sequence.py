@@ -57,7 +57,8 @@ def test_a_repeated_page_number_is_a_jump_of_zero() -> None:
 
 def test_going_backwards_is_reported_by_its_delta_not_by_a_verdict() -> None:
     (finding,) = run(check_page_progression, *numbered(3, 1), preset="page")
-    assert "a change of -2 instead of 1" in finding.message
+
+    assert finding.evidence[-1].value == -2
     assert "backwards" not in finding.message
 
 

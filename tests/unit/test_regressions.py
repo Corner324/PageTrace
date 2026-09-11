@@ -105,10 +105,8 @@ def test_a_total_that_is_not_an_integer_on_one_page_stops_the_comparison() -> No
         page(0, total=5, next_cursor="b", item_ids=[1]),
         page(1, total="many", next_cursor=None, item_ids=[2]),
     ]
-    (finding,) = list(check_total_discrepancy(trace(*pages)))
 
-    assert finding.certainty is Certainty.INSUFFICIENT_EVIDENCE
-    assert finding.code == "TOTAL_CHANGED_BETWEEN_PAGES"
+    assert list(check_total_discrepancy(trace(*pages))) == []
 
 
 def test_an_offset_witness_after_the_violation_does_not_prove_it() -> None:

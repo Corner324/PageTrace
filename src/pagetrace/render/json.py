@@ -63,4 +63,10 @@ def _evidence(path: str, value: object) -> dict[str, Any]:
 
 def render_json(trace: Trace, findings: list[Finding]) -> str:
     """Stable text: fixed key order, two-space indent, one trailing newline, no timestamps."""
-    return json.dumps(build_report(trace, findings), indent=2, ensure_ascii=False) + "\n"
+    # allow_nan=False is a backstop, not the guard: the parsers reject NaN and Infinity at the
+    # input boundary. Should one ever reach here, failing beats writing a report that claims to
+    # match the published schema and that no strict parser can read.
+    report = json.dumps(
+        build_report(trace, findings), indent=2, ensure_ascii=False, allow_nan=False
+    )
+    return report + "\n"

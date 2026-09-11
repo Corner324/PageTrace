@@ -15,7 +15,7 @@ from pagetrace import __version__
 from pagetrace.checks import run_checks
 from pagetrace.errors import PageTraceError
 from pagetrace.inputs import detect_format, read_trace
-from pagetrace.model import Trace, exit_code_for
+from pagetrace.model import Trace, escape_control, exit_code_for
 from pagetrace.normalize import PRESET_DEFAULTS, PRESETS, SelectorSet, build_trace, filter_requests
 from pagetrace.render.json import render_json
 from pagetrace.render.junit import render_junit
@@ -126,7 +126,9 @@ def main(argv: Sequence[str] | None = None) -> int:
     try:
         return run_check(args)
     except PageTraceError as exc:
-        print(f"pagetrace: {exc}", file=sys.stderr)
+        # Error text carries filenames and operating system messages, neither of which is a
+        # normalized observation. Escaping happens once, here, on the way out.
+        print(f"pagetrace: {escape_control(str(exc))}", file=sys.stderr)
         return EXIT_USAGE
     except KeyboardInterrupt:  # pragma: no cover - interactive only
         print("pagetrace: interrupted", file=sys.stderr)

@@ -138,7 +138,19 @@ def test_a_return_to_a_later_state_stays_proven() -> None:
 
 def test_unobservable_cursors_prove_nothing() -> None:
     assert run(check_cursor_cycle, *cursors(None, None, None)) == []
-    assert run(check_cursor_stalled, *cursors(None, None)) == []
+
+
+def test_a_transition_without_cursors_on_either_side_is_reported_as_insufficient() -> None:
+    """INV-CURSOR-002: silence here would look like a stall check that passed."""
+    (finding,) = run(check_cursor_stalled, *cursors(None, None))
+
+    assert finding.code == "CURSOR_STALL_NOT_OBSERVABLE"
+    assert finding.certainty is Certainty.INSUFFICIENT_EVIDENCE
+
+
+def test_a_missing_cursor_on_one_side_only_stays_silent() -> None:
+    """Page 0 carries no incoming cursor in a normal trace; that is not missing evidence."""
+    assert run(check_cursor_stalled, *cursors(None, "b", "c")) == []
 
 
 def test_other_presets_are_left_alone() -> None:

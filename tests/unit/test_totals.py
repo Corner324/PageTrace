@@ -8,7 +8,6 @@ from pagetrace.checks.totals import check_total_discrepancy
 from pagetrace.model import Certainty, Finding, ObservationStatus, Page
 
 DISCREPANCY = "TOTAL_COUNT_DISCREPANCY"
-CHANGED = "TOTAL_CHANGED_BETWEEN_PAGES"
 NOT_OBSERVABLE = "TOTAL_ITEMS_NOT_OBSERVABLE"
 
 
@@ -73,16 +72,14 @@ def test_termination_declared_by_has_more_false_is_enough() -> None:
     assert finding.certainty is Certainty.PROVEN
 
 
-def test_a_changing_total_stops_the_comparison() -> None:
+def test_a_changing_total_reports_nothing() -> None:
+    """INV-TOTAL-001: a total that moves means the dataset moved, and that is not ours to say."""
     pages = [
         page(0, total=10, item_ids=[1], next_cursor="n"),
         page(1, total=12, item_ids=[2], next_cursor=None),
     ]
-    findings = run(*pages)
 
-    assert [f.code for f in findings] == [CHANGED]
-    assert findings[0].certainty is Certainty.INSUFFICIENT_EVIDENCE
-    assert "dataset moved" in findings[0].message
+    assert run(*pages) == []
 
 
 def test_unidentified_items_downgrade_to_suspicious() -> None:

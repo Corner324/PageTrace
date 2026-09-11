@@ -66,6 +66,15 @@ def test_every_evidence_value_shape_matches_the_schema(validator: Validator, val
     validator.validate(build_report(trace(page(0)), [finding(value=value)]))
 
 
+def test_a_report_without_its_input_block_is_rejected(validator: Validator) -> None:
+    """The renderer always writes `input`; the schema has to say so, or it cannot catch a loss."""
+    report = build_report(trace(page(0)), [])
+    del report["input"]
+
+    with pytest.raises(jsonschema.ValidationError):
+        validator.validate(report)
+
+
 def test_summary_counts_and_exit_code() -> None:
     report = build_report(
         trace(page(0)),

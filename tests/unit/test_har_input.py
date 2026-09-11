@@ -274,3 +274,16 @@ def test_three_values_for_one_query_parameter_stay_a_list(tmp_path: Path) -> Non
     record["request"]["queryString"] = [{"name": "c", "value": v} for v in ("a", "b", "c")]
     (observation,) = read_har(write(tmp_path, record))
     assert observation.query == {"c": ["a", "b", "c"]}
+
+
+def test_a_body_with_a_json_constant_python_invents_is_not_read(tmp_path: Path) -> None:
+    """NaN is not JSON. An unreadable body is not an error in a HAR, but it is not observed."""
+    (observation,) = read_har(write(tmp_path, entry(text='{"items": NaN}')))
+
+    assert observation.body is None
+
+
+def test_a_body_with_an_integer_too_long_for_cpython_is_not_read(tmp_path: Path) -> None:
+    (observation,) = read_har(write(tmp_path, entry(text='{"total": ' + "9" * 5000 + "}")))
+
+    assert observation.body is None

@@ -15,10 +15,24 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       - run: uv lock --check
       - run: uv sync
+      - name: The tag and the package version have to be the same thing
+        run: |
+          uv run python - <<'PY'
+          import os, sys, tomllib
+          tag = os.environ["GITHUB_REF_NAME"]
+          with open("pyproject.toml", "rb") as handle:
+              version = tomllib.load(handle)["project"]["version"]
+          if tag != f"v{version}":
+              sys.exit(f"tag {tag} does not match project.version {version}")
+          print(f"tag {tag} matches project.version {version}")
+          PY
       - run: uv run ruff check . && uv run ruff format --check . && uv run pyright
       - run: uv run pytest --cov --cov-branch
         env:
           HYPOTHESIS_PROFILE: nightly
+      # docs/performance.md says a release blocks on a budget regression. Only a gross one is
+      # visible on a shared runner, and that is what this catches.
+      - run: uv run python -m benchmarks.bench_pipeline --smoke
       - run: uv build
       - run: |
           uv venv /tmp/smoke

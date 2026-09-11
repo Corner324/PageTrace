@@ -9,8 +9,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 
-from pagetrace.checks.base import insufficient, last_ok_page
-from pagetrace.checks.cursors import CURSOR_PRESETS
+from pagetrace.checks.base import CURSOR_PRESETS, insufficient, last_ok_page
 from pagetrace.model import Certainty, Finding, Observation, Severity, Trace
 
 
@@ -64,9 +63,15 @@ def check_trace_ends_with_has_more(trace: Trace) -> Iterator[Finding]:
 def check_empty_page_with_has_more(trace: Trace) -> Iterator[Finding]:
     """INV-CONT-002: a page returned no items while declaring that more existed."""
     last = last_ok_page(trace)
+    uncountable = 0
     for page in trace.pages:
         if not page.ok or page is last:
             # The final page is INV-CONT-001's business; reporting both is one fact twice.
+            continue
+        if declares_more(page.has_more) and not page.items.observed:
+            # The page declared more results and the items could not be counted, so whether it
+            # was empty is exactly what this detector cannot see.
+            uncountable += 1
             continue
         if declares_more(page.has_more) and page.items.observed and page.items.count == 0:
             yield Finding(
@@ -85,6 +90,16 @@ def check_empty_page_with_has_more(trace: Trace) -> Iterator[Finding]:
                     page.item_count_evidence,
                 ),
             )
+
+    if uncountable:
+        yield insufficient(
+            code="EMPTY_PAGE_ITEMS_NOT_OBSERVABLE",
+            invariant="INV-CONT-002",
+            message=(
+                f"{uncountable} pages declared further pagination without an items array that "
+                f"could be counted, so whether they were empty was not checked. Check --items."
+            ),
+        )
 
 
 def check_trace_ends_with_continuation(trace: Trace) -> Iterator[Finding]:

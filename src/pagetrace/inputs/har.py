@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Any
 
 from pagetrace.errors import PageTraceError
-from pagetrace.inputs import HEADER_ALLOWLIST, as_array, as_object
+from pagetrace.inputs import HEADER_ALLOWLIST, as_array, as_object, load_json
 from pagetrace.limits import MAX_BODY_BYTES
 from pagetrace.model import RawObservation
 
@@ -45,9 +45,11 @@ def _load(path: Path) -> dict[str, Any]:
         raise PageTraceError(f"{path.name}: not valid UTF-8 ({exc.reason})") from exc
 
     try:
-        document: object = json.loads(text)
+        document: object = load_json(text)
     except json.JSONDecodeError as exc:
         raise PageTraceError(f"{path.name}: invalid JSON: {exc.msg}") from exc
+    except ValueError as exc:
+        raise PageTraceError(f"{path.name}: invalid JSON: {exc}") from exc
     except RecursionError as exc:
         raise PageTraceError(f"{path.name}: JSON nested too deeply") from exc
 
@@ -157,10 +159,11 @@ def _body(response: dict[str, Any], index: int, name: str) -> object:
         )
 
     try:
-        return json.loads(decoded)
-    except (json.JSONDecodeError, RecursionError):
+        return load_json(decoded)
+    except (ValueError, RecursionError):
         # A body that is not JSON carries no observations. It is not an error: plenty of entries
-        # in a HAR are HTML or an image.
+        # in a HAR are HTML or an image. `ValueError` covers a malformed document, a NaN token
+        # and a number too long for CPython to build.
         return None
 
 

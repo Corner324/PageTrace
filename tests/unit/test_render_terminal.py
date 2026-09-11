@@ -132,3 +132,11 @@ def test_int_value_of_an_unobserved_selector_is_none() -> None:
     from pagetrace.model import ObservationStatus
 
     assert Observation.missing("p", ObservationStatus.NOT_FOUND).int_value is None
+
+
+def test_the_trace_filename_is_escaped() -> None:
+    """A filename is not an observation, so nothing else escapes it on the way out."""
+    report = render_terminal(trace(page(0)), [], "run[2J.jsonl")
+
+    assert "" not in report
+    assert report.startswith("run" + chr(92) + "x1b[2J.jsonl:")

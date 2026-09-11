@@ -55,6 +55,19 @@ def canonical_text(value: Scalar) -> str:
     return str(value)
 
 
+def escape_control(text: str) -> str:
+    """Replace every non-printable character with its `\\xNN` form.
+
+    Trace values go through `render.display`, which calls this. Filenames and operating system
+    error strings do not: they are not observations, but they are attacker-influenced all the
+    same, and a file called `run.jsonl\\x1b[2J` must not be able to rewrite the terminal it is
+    reported in.
+    """
+    return "".join(
+        character if character.isprintable() else f"\\x{ord(character):02x}" for character in text
+    )
+
+
 @dataclass(frozen=True, slots=True)
 class Observation:
     """The result of applying one selector to one request, response, or item."""

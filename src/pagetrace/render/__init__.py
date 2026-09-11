@@ -9,7 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from pagetrace.limits import MAX_DISPLAY_CHARS
-from pagetrace.model import Scalar
+from pagetrace.model import Scalar, escape_control
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,9 +46,7 @@ def display(value: Scalar, limit: int = MAX_DISPLAY_CHARS) -> Display:
     if not isinstance(value, str):
         return Display(value, truncated=False, length=len(str(value)))
 
-    escaped = "".join(
-        character if character.isprintable() else f"\\x{ord(character):02x}" for character in value
-    )
+    escaped = escape_control(value)
     if len(escaped) <= limit:
         return Display(escaped, truncated=False, length=len(value))
     return Display(escaped[:limit], truncated=True, length=len(value))

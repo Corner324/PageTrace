@@ -97,12 +97,16 @@ def test_the_final_page_is_left_to_the_other_invariant() -> None:
     assert run(check_empty_page_with_has_more, page(0, has_more=True, item_count=0)) == []
 
 
-def test_an_unobservable_items_array_proves_nothing() -> None:
+def test_an_unobservable_items_array_is_reported_as_insufficient() -> None:
+    """INV-CONT-002: an items selector that resolves to nothing is missing evidence, not a pass."""
     pages = [
         page(0, has_more=True, items_status=ObservationStatus.NOT_FOUND),
         page(1, has_more=False, item_count=1),
     ]
-    assert run(check_empty_page_with_has_more, *pages) == []
+    (finding,) = run(check_empty_page_with_has_more, *pages)
+
+    assert finding.code == "EMPTY_PAGE_ITEMS_NOT_OBSERVABLE"
+    assert finding.certainty is Certainty.INSUFFICIENT_EVIDENCE
 
 
 # ---------------------------------------------------------------- INV-TRACE-001
