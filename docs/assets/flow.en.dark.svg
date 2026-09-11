@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 728" width="880" height="728" role="img" aria-label="No network call at any step">
+<defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#6e7681"/></marker></defs>
+<rect x="44" y="28" width="700" height="88" rx="12" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+<circle cx="78" cy="72.0" r="15" fill="#e08a70"/>
+<text x="78" y="77.0" font-family="ui-monospace, SFMono-Regular, 'DejaVu Sans Mono', Menlo, Consolas, monospace" font-size="15" font-weight="700" fill="#0d1117" text-anchor="middle">1</text>
+<text x="110" y="58" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="650" fill="#e6edf3">Recorded trace</text>
+<text x="110" y="80" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="14" fill="#9198a1">A file you already have, or a browser HAR</text>
+<text x="110" y="102" font-family="ui-monospace, SFMono-Regular, 'DejaVu Sans Mono', Menlo, Consolas, monospace" font-size="13" fill="#d2a8ff">examples/broken-cursor.jsonl</text>
+<path d="M78 124 V164" stroke="#6e7681" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<text x="110" y="149.0" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="13" fill="#9198a1">parsed, bounded per line and per body</text>
+<rect x="44" y="174" width="700" height="88" rx="12" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+<circle cx="78" cy="218.0" r="15" fill="#e08a70"/>
+<text x="78" y="223.0" font-family="ui-monospace, SFMono-Regular, 'DejaVu Sans Mono', Menlo, Consolas, monospace" font-size="15" font-weight="700" fill="#0d1117" text-anchor="middle">2</text>
+<text x="110" y="204" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="650" fill="#e6edf3">Parser</text>
+<text x="110" y="226" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="14" fill="#9198a1">Header allowlist: only "link" survives</text>
+<text x="110" y="248" font-family="ui-monospace, SFMono-Regular, 'DejaVu Sans Mono', Menlo, Consolas, monospace" font-size="13" fill="#d2a8ff">inputs/jsonl.py  ·  inputs/har.py</text>
+<path d="M78 270 V310" stroke="#6e7681" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<text x="110" y="295.0" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="13" fill="#9198a1">raw bodies and secret headers stop here</text>
+<rect x="44" y="320" width="700" height="88" rx="12" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+<circle cx="78" cy="364.0" r="15" fill="#e08a70"/>
+<text x="78" y="369.0" font-family="ui-monospace, SFMono-Regular, 'DejaVu Sans Mono', Menlo, Consolas, monospace" font-size="15" font-weight="700" fill="#0d1117" text-anchor="middle">3</text>
+<text x="110" y="350" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="650" fill="#e6edf3">Normalizer</text>
+<text x="110" y="372" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="14" fill="#9198a1">Preset + RFC 9535 selectors, into a page stream</text>
+<text x="110" y="394" font-family="ui-monospace, SFMono-Regular, 'DejaVu Sans Mono', Menlo, Consolas, monospace" font-size="13" fill="#d2a8ff">observation is three-valued</text>
+<path d="M78 416 V456" stroke="#6e7681" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<text x="110" y="441.0" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="13" fill="#9198a1">pages only: a detector has no field for a body</text>
+<rect x="44" y="466" width="700" height="88" rx="12" fill="#161b22" stroke="#30363d" stroke-width="1.5"/>
+<circle cx="78" cy="510.0" r="15" fill="#e08a70"/>
+<text x="78" y="515.0" font-family="ui-monospace, SFMono-Regular, 'DejaVu Sans Mono', Menlo, Consolas, monospace" font-size="15" font-weight="700" fill="#0d1117" text-anchor="middle">4</text>
+<text x="110" y="496" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="650" fill="#e6edf3">Invariant engine</text>
+<text x="110" y="518" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="14" fill="#9198a1">Eleven detectors, pure and deterministic</text>
+<text x="110" y="540" font-family="ui-monospace, SFMono-Regular, 'DejaVu Sans Mono', Menlo, Consolas, monospace" font-size="13" fill="#d2a8ff">specs/invariants.md</text>
+<path d="M78 562 V602" stroke="#6e7681" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<text x="110" y="587.0" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="13" fill="#9198a1">findings, each carrying its evidence</text>
+<rect x="44" y="612" width="700" height="88" rx="12" fill="#161b22" stroke="#e08a70" stroke-width="2"/>
+<circle cx="78" cy="656.0" r="15" fill="#e08a70"/>
+<text x="78" y="661.0" font-family="ui-monospace, SFMono-Regular, 'DejaVu Sans Mono', Menlo, Consolas, monospace" font-size="15" font-weight="700" fill="#0d1117" text-anchor="middle">5</text>
+<text x="110" y="642" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="650" fill="#e6edf3">Report</text>
+<text x="110" y="664" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="14" fill="#9198a1">PROVEN  ·  SUSPICIOUS  ·  INSUFFICIENT_EVIDENCE</text>
+<text x="110" y="686" font-family="ui-monospace, SFMono-Regular, 'DejaVu Sans Mono', Menlo, Consolas, monospace" font-size="13" fill="#d2a8ff">terminal · JSON · JUnit   -&gt;   exit 0 / 1 / 2</text>
+<rect x="770" y="28" width="86" height="672" rx="12" fill="#3a241f" stroke="#e08a70" stroke-width="1.5" stroke-dasharray="5 6"/>
+<text transform="translate(813.0 364.0) rotate(-90)" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="650" fill="#e08a70" text-anchor="middle">No network call at any step</text>
+</svg>

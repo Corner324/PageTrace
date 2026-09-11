@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 728" width="880" height="728" role="img" aria-label="任何一步都不发起网络请求">
+<defs><marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10 z" fill="#8c959f"/></marker></defs>
+<rect x="44" y="28" width="700" height="88" rx="12" fill="#f6f8fa" stroke="#d0d7de" stroke-width="1.5"/>
+<circle cx="78" cy="72.0" r="15" fill="#c0543c"/>
+<text x="78" y="77.0" font-family="ui-monospace, SFMono-Regular, 'DejaVu Sans Mono', Menlo, Consolas, monospace" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">1</text>
+<text x="110" y="58" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="650" fill="#1f2328">已录制的轨迹</text>
+<text x="110" y="80" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="14" fill="#59636e">你手上已有的文件，或浏览器导出的 HAR</text>
+<text x="110" y="102" font-family="ui-monospace, SFMono-Regular, 'DejaVu Sans Mono', Menlo, Consolas, monospace" font-size="13" fill="#6639ba">examples/broken-cursor.jsonl</text>
+<path d="M78 124 V164" stroke="#8c959f" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<text x="110" y="149.0" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="13" fill="#59636e">解析，按行与按响应体设上限</text>
+<rect x="44" y="174" width="700" height="88" rx="12" fill="#f6f8fa" stroke="#d0d7de" stroke-width="1.5"/>
+<circle cx="78" cy="218.0" r="15" fill="#c0543c"/>
+<text x="78" y="223.0" font-family="ui-monospace, SFMono-Regular, 'DejaVu Sans Mono', Menlo, Consolas, monospace" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">2</text>
+<text x="110" y="204" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="650" fill="#1f2328">解析器</text>
+<text x="110" y="226" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="14" fill="#59636e">响应头白名单：只有 "link" 留下</text>
+<text x="110" y="248" font-family="ui-monospace, SFMono-Regular, 'DejaVu Sans Mono', Menlo, Consolas, monospace" font-size="13" fill="#6639ba">inputs/jsonl.py  ·  inputs/har.py</text>
+<path d="M78 270 V310" stroke="#8c959f" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<text x="110" y="295.0" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="13" fill="#59636e">原始响应体与机密请求头到此为止</text>
+<rect x="44" y="320" width="700" height="88" rx="12" fill="#f6f8fa" stroke="#d0d7de" stroke-width="1.5"/>
+<circle cx="78" cy="364.0" r="15" fill="#c0543c"/>
+<text x="78" y="369.0" font-family="ui-monospace, SFMono-Regular, 'DejaVu Sans Mono', Menlo, Consolas, monospace" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">3</text>
+<text x="110" y="350" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="650" fill="#1f2328">规范化</text>
+<text x="110" y="372" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="14" fill="#59636e">预设加 RFC 9535 选择器，变成页面序列</text>
+<text x="110" y="394" font-family="ui-monospace, SFMono-Regular, 'DejaVu Sans Mono', Menlo, Consolas, monospace" font-size="13" fill="#6639ba">观测是三值的</text>
+<path d="M78 416 V456" stroke="#8c959f" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<text x="110" y="441.0" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="13" fill="#59636e">只有页面：检测器没有存放响应体的字段</text>
+<rect x="44" y="466" width="700" height="88" rx="12" fill="#f6f8fa" stroke="#d0d7de" stroke-width="1.5"/>
+<circle cx="78" cy="510.0" r="15" fill="#c0543c"/>
+<text x="78" y="515.0" font-family="ui-monospace, SFMono-Regular, 'DejaVu Sans Mono', Menlo, Consolas, monospace" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">4</text>
+<text x="110" y="496" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="650" fill="#1f2328">不变量引擎</text>
+<text x="110" y="518" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="14" fill="#59636e">十一个检测器，纯函数且确定</text>
+<text x="110" y="540" font-family="ui-monospace, SFMono-Regular, 'DejaVu Sans Mono', Menlo, Consolas, monospace" font-size="13" fill="#6639ba">specs/invariants.md</text>
+<path d="M78 562 V602" stroke="#8c959f" stroke-width="2" fill="none" marker-end="url(#a)"/>
+<text x="110" y="587.0" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="13" fill="#59636e">带着各自证据的发现</text>
+<rect x="44" y="612" width="700" height="88" rx="12" fill="#f6f8fa" stroke="#c0543c" stroke-width="2"/>
+<circle cx="78" cy="656.0" r="15" fill="#c0543c"/>
+<text x="78" y="661.0" font-family="ui-monospace, SFMono-Regular, 'DejaVu Sans Mono', Menlo, Consolas, monospace" font-size="15" font-weight="700" fill="#ffffff" text-anchor="middle">5</text>
+<text x="110" y="642" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="19" font-weight="650" fill="#1f2328">报告</text>
+<text x="110" y="664" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="14" fill="#59636e">PROVEN  ·  SUSPICIOUS  ·  INSUFFICIENT_EVIDENCE</text>
+<text x="110" y="686" font-family="ui-monospace, SFMono-Regular, 'DejaVu Sans Mono', Menlo, Consolas, monospace" font-size="13" fill="#6639ba">终端 · JSON · JUnit   -&gt;   退出码 0 / 1 / 2</text>
+<rect x="770" y="28" width="86" height="672" rx="12" fill="#f5e4e0" stroke="#c0543c" stroke-width="1.5" stroke-dasharray="5 6"/>
+<text transform="translate(813.0 364.0) rotate(-90)" font-family="ui-sans-serif, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif" font-size="15" font-weight="650" fill="#c0543c" text-anchor="middle">任何一步都不发起网络请求</text>
+</svg>
