@@ -32,5 +32,7 @@ IDs: int / UUID-like / long string; patterns: valid, duplicate-heavy, cycle-heav
 PR: small smoke only; block on a stable regression (>20% median slowdown, confirmed by repeats).
 Nightly: full corpus. Release: budget regression blocks.
 
-HAR streaming (`ijson`) is added together with HAR support, once `json.load()` on a 500 MB file
-is measured, not assumed.
+HAR is parsed with the standard library (`docs/adr/0004`). Peak memory is therefore roughly the
+file size times the usual parsed-JSON overhead, which is a known limit, not a promise. A
+streaming parser is a dependency the project will add when a benchmark shows it is needed, and
+it would touch `inputs/har.py` only. JSONL already streams, one bounded line at a time.

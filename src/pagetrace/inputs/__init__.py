@@ -7,6 +7,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 from pathlib import Path
+from typing import Any, cast
 
 from pagetrace.errors import PageTraceError
 from pagetrace.model import RawObservation
@@ -38,16 +39,34 @@ def detect_format(path: Path) -> str:
     )
 
 
+def as_object(value: object) -> dict[str, Any] | None:
+    """A JSON object, or None.
+
+    One place to lose the `Unknown` a bare isinstance leaves behind, so parsers read
+    as parsers instead of as a wall of type suppressions.
+    """
+    if isinstance(value, dict):
+        return cast("dict[str, Any]", value)
+    return None
+
+
+def as_array(value: object) -> list[Any] | None:
+    """A JSON array, or None."""
+    if isinstance(value, list):
+        return cast("list[Any]", value)
+    return None
+
+
 def filter_headers(headers: object) -> dict[str, str]:
     """Lowercase header names and keep only the allowlist. Anything odd is dropped silently."""
-    if not isinstance(headers, dict):
+    mapping = as_object(headers)
+    if mapping is None:
         return {}
     kept: dict[str, str] = {}
-    for name, value in headers.items():  # pyright: ignore[reportUnknownVariableType]
-        if isinstance(name, str) and isinstance(value, str):
-            lowered = name.lower()
-            if lowered in HEADER_ALLOWLIST:
-                kept[lowered] = value
+    for name, value in mapping.items():
+        lowered = str(name).lower()
+        if isinstance(value, str) and lowered in HEADER_ALLOWLIST:
+            kept[lowered] = value
     return kept
 
 

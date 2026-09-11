@@ -190,8 +190,8 @@ def test_read_trace_honours_an_explicit_format(tmp_path: Path) -> None:
     assert len(read_trace(path, "jsonl")) == 1
 
 
-def test_har_is_not_implemented_yet(tmp_path: Path) -> None:
+def test_read_trace_dispatches_to_the_har_reader(tmp_path: Path) -> None:
     path = tmp_path / "t.har"
     path.write_text("{}", encoding="utf-8")
-    with pytest.raises(PageTraceError, match="not implemented"):
+    with pytest.raises(PageTraceError, match="no HAR log object"):
         read_trace(path, "auto")

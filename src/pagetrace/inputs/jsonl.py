@@ -9,7 +9,7 @@ from typing import Any
 from urllib.parse import parse_qsl, urlsplit
 
 from pagetrace.errors import PageTraceError
-from pagetrace.inputs import filter_headers, iter_lines
+from pagetrace.inputs import as_object, filter_headers, iter_lines
 from pagetrace.limits import MAX_LINE_BYTES
 from pagetrace.model import RawObservation
 
@@ -52,9 +52,10 @@ def _parse_object(text: str, line_number: int) -> dict[str, Any]:
     except RecursionError as exc:
         raise PageTraceError(f"line {line_number}: JSON nested too deeply") from exc
 
-    if not isinstance(value, dict):
+    record = as_object(value)
+    if record is None:
         raise PageTraceError(f"line {line_number}: expected a JSON object")
-    return value  # pyright: ignore[reportUnknownVariableType]
+    return record
 
 
 def _check_version(record: dict[str, Any], line_number: int) -> None:
@@ -114,10 +115,10 @@ def record_flag(container: dict[str, Any], name: str) -> bool:
 
 
 def _require_object(record: dict[str, Any], name: str, line_number: int) -> dict[str, Any]:
-    value: object = record.get(name)
-    if not isinstance(value, dict):
+    value = as_object(record.get(name))
+    if value is None:
         raise PageTraceError(f"line {line_number}: {name} must be a JSON object")
-    return value  # pyright: ignore[reportUnknownVariableType]
+    return value
 
 
 def query_of(request: dict[str, Any], url: str) -> dict[str, str | list[str]]:
@@ -126,11 +127,11 @@ def query_of(request: dict[str, Any], url: str) -> dict[str, str | list[str]]:
     A parameter that appears more than once becomes a list, so a selector resolves it to
     NOT_SCALAR instead of silently picking one of the values.
     """
-    explicit: object = request.get("query")
-    if isinstance(explicit, dict):
+    explicit = as_object(request.get("query"))
+    if explicit is not None:
         return {
-            str(name): value if isinstance(value, list) else str(value)  # pyright: ignore[reportUnknownArgumentType]
-            for name, value in explicit.items()  # pyright: ignore[reportUnknownVariableType]
+            str(name): value if isinstance(value, list) else str(value)
+            for name, value in explicit.items()
         }
 
     parsed: dict[str, str | list[str]] = {}
