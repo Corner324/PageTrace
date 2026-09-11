@@ -1,0 +1,72 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/OWNER/pagetrace/specs/formats/report-json-v1.schema.json",
+  "title": "PageTrace report v1",
+  "type": "object",
+  "required": ["schema_version", "tool", "input", "summary", "findings"],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": { "const": 1 },
+    "tool": {
+      "type": "object",
+      "required": ["name", "version"],
+      "additionalProperties": false,
+      "properties": {
+        "name": { "const": "pagetrace" },
+        "version": { "type": "string" }
+      }
+    },
+    "input": {
+      "type": "object",
+      "required": ["format", "preset", "page_count"],
+      "additionalProperties": false,
+      "properties": {
+        "format": { "enum": ["jsonl", "har"] },
+        "preset": { "enum": ["cursor", "page", "offset", "link"] },
+        "page_count": { "type": "integer", "minimum": 0 }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": ["proven", "suspicious", "insufficient_evidence", "exit_code"],
+      "additionalProperties": false,
+      "properties": {
+        "proven": { "type": "integer", "minimum": 0 },
+        "suspicious": { "type": "integer", "minimum": 0 },
+        "insufficient_evidence": { "type": "integer", "minimum": 0 },
+        "exit_code": { "enum": [0, 1, 2] }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/finding" }
+    }
+  },
+  "$defs": {
+    "finding": {
+      "type": "object",
+      "required": ["code", "invariant", "certainty", "severity", "message", "affected_pages", "evidence"],
+      "additionalProperties": false,
+      "properties": {
+        "code": { "type": "string", "pattern": "^[A-Z][A-Z0-9_]+$" },
+        "invariant": { "type": "string", "pattern": "^INV-[A-Z]+-[0-9]{3}$" },
+        "certainty": { "enum": ["PROVEN", "SUSPICIOUS", "INSUFFICIENT_EVIDENCE"] },
+        "severity": { "enum": ["INFO", "WARNING", "ERROR"] },
+        "message": { "type": "string" },
+        "affected_pages": { "type": "array", "items": { "type": "integer", "minimum": 0 } },
+        "evidence": { "type": "array", "items": { "$ref": "#/$defs/evidence" } }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": ["path", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "path": { "type": "string", "description": "e.g. page[4].response.next_cursor" },
+        "value": { "description": "display-safe value: escaped, truncated; see docs/security.md" },
+        "truncated": { "type": "boolean" },
+        "length": { "type": "integer", "minimum": 0 }
+      }
+    }
+  }
+}

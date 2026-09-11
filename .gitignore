@@ -16,3 +16,7 @@ mutation-results/
 benchmark-results/
 .work/
 .claude/settings.local.json
+
+# specs/ is excluded by a global gitignore on at least one machine (spec-kit leftovers).
+# It holds the normative contract of this project and must be in the repository.
+!specs/
