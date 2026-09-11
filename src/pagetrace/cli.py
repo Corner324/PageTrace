@@ -18,6 +18,7 @@ from pagetrace.inputs import detect_format, read_trace
 from pagetrace.model import Trace, exit_code_for
 from pagetrace.normalize import PRESET_DEFAULTS, PRESETS, SelectorSet, build_trace, filter_requests
 from pagetrace.render.json import render_json
+from pagetrace.render.junit import render_junit
 from pagetrace.render.terminal import render_terminal
 
 # Exit code contract (specs/product.md). Public, versioned with the CLI.
@@ -103,8 +104,8 @@ def run_check(args: argparse.Namespace) -> int:
         report = render_terminal(trace, findings, args.trace.name)
     elif args.output_format == "json":
         report = render_json(trace, findings)
-    else:  # pragma: no cover - the JUnit renderer arrives with its own tests
-        raise PageTraceError(f"--format {args.output_format} is not implemented yet")
+    else:
+        report = render_junit(trace, findings)
 
     _write(report, args.output)
     return exit_code_for(findings)

@@ -209,3 +209,20 @@ def test_version_flag(capsys: pytest.CaptureFixture[str]) -> None:
         main(["--version"])
     assert exit_info.value.code == EXIT_OK
     assert capsys.readouterr().out.strip() == f"pagetrace {__version__}"
+
+
+def test_junit_output_reaches_ci(broken_trace: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    assert main(["check", str(broken_trace), "--format", "junit"]) == EXIT_VIOLATIONS
+    out = capsys.readouterr().out
+
+    assert out.startswith('<?xml version="1.0" encoding="utf-8"?>')
+    assert '<testsuite name="pagetrace"' in out
+    assert 'name="INV-CURSOR-001"' in out
+    assert "<failure" in out
+
+
+def test_junit_of_a_clean_trace_has_no_failures(
+    clean_trace: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    assert main(["check", str(clean_trace), "--format", "junit"]) == EXIT_OK
+    assert 'failures="0"' in capsys.readouterr().out
