@@ -12,6 +12,7 @@ from tests.property.strategies import (
     change_next_cursor,
     drop_last_page,
     duplicate_item,
+    duplicate_response,
     freeze_cursor,
     insert_cursor_cycle,
     set_has_more_true_on_final_page,
@@ -105,3 +106,14 @@ def test_has_more_on_the_final_page_is_detected(trace: Trace) -> None:
 def test_a_dropped_last_page_leaves_an_unused_continuation(trace: Trace) -> None:
     findings = proven(drop_last_page(trace))
     assert "TRACE_ENDS_WITH_CONTINUATION" in codes(findings)
+
+
+@given(valid_trace(min_pages=2), st.data())
+def test_a_duplicated_response_is_at_most_suspicious(trace: Trace, data: st.DataObject) -> None:
+    """An identical body is never promoted to a proven pagination defect."""
+    index = data.draw(st.integers(min_value=0, max_value=trace.page_count - 2))
+    mutated = duplicate_response(trace, index)
+
+    identical = [f for f in run_checks(mutated) if f.code == "IDENTICAL_CONSECUTIVE_RESPONSES"]
+    assert all(f.certainty is Certainty.SUSPICIOUS for f in identical)
+    assert "IDENTICAL_CONSECUTIVE_RESPONSES" not in codes(proven(mutated))
