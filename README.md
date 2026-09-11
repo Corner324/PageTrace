@@ -5,13 +5,17 @@
 Offline checker for recorded API pagination traces: it reads a capture and reports what the
 trace proves about the pagination, without touching the network.
 
-[![CI](https://github.com/OWNER/pagetrace/actions/workflows/ci.yml/badge.svg)](https://github.com/OWNER/pagetrace/actions/workflows/ci.yml)
+**English** · [Русский](README.ru.md) · [中文](README.zh.md)
+
+[![CI](https://github.com/Corner324/PageTrace/actions/workflows/ci.yml/badge.svg)](https://github.com/Corner324/PageTrace/actions/workflows/ci.yml)
+[![Coverage 98.97%](https://img.shields.io/badge/coverage-98.97%25%20branch-brightgreen.svg)](docs/testing.md)
+[![Tests 425](https://img.shields.io/badge/tests-425-brightgreen.svg)](docs/testing.md)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue.svg)](docs/compatibility.md)
-[![PyPI](https://img.shields.io/badge/pypi-not%20yet%20published-lightgrey.svg)](docs/compatibility.md#releasing)
+[![PyPI](https://img.shields.io/badge/pypi-not%20yet%20published-lightgrey.svg)](docs/compatibility.md)
 
-The repository has no remote yet: the CI badge has nothing to resolve against, the workflows in
-`.github/workflows/` have never run, and every number below was measured locally.
+Coverage and test count are measured locally and written into the badge by hand; they move only
+when someone updates them. The CI badge is live.
 
 ## What it does
 
@@ -189,8 +193,9 @@ uv run ruff check . && uv run ruff format --check . && uv run pyright && uv run 
 425 tests pass locally at 98.97% branch coverage (`uv run pytest --cov --cov-branch`), on 3.11,
 3.12, 3.13 and 3.14 on Windows. The property suite in `tests/property/` is the main correctness
 layer: a valid generated trace must produce no `PROVEN` finding, and each mutation operator must
-wake exactly one detector. Mutation testing is configured for `mutmut` but has never been run -
-mutmut does not run on Windows, and the nightly Linux job it would come from has never run either.
+wake exactly one detector. Mutation score is 77.9% against the unit tests as of 2026-09-12, with
+the survivors sorted by hand in [docs/testing.md](docs/testing.md); mutmut refuses to run on
+Windows, so that run came from a Linux container.
 
 Before a new detector: an entry in [specs/invariants.md](specs/invariants.md) with its non-claim
 conditions, then the test oracle, then the code. [CONTRIBUTING.md](CONTRIBUTING.md) has the
