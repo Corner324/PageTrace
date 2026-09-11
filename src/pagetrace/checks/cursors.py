@@ -64,13 +64,23 @@ def check_cursor_continuation(trace: Trace) -> Iterator[Finding]:
 
 
 def check_cursor_stalled(trace: Trace) -> Iterator[Finding]:
-    """INV-CURSOR-002: the same pagination state was requested twice in a row."""
+    """INV-CURSOR-002: the same pagination state was requested twice in a row.
+
+    One finding per stalled value. A run of the same cursor is a single fact, but a stall on
+    `A` and a later stall on `B` are two, and INV-CURSOR-001 stays silent on both pairs in the
+    belief that this detector reports them.
+    """
     if trace.preset not in CURSOR_PRESETS:
         return
 
+    reported: set[str] = set()
     for earlier, later in transitions(trace):
         if not earlier.request_cursor.same_as(later.request_cursor):
             continue
+        stalled_on = earlier.request_cursor.text
+        if stalled_on is None or stalled_on in reported:
+            continue
+        reported.add(stalled_on)
 
         evidence = [earlier.evidence(earlier.request_cursor), later.evidence(later.request_cursor)]
         if earlier.next_cursor.observed:
@@ -88,8 +98,6 @@ def check_cursor_stalled(trace: Trace) -> Iterator[Finding]:
             affected_pages=(earlier.index, later.index),
             evidence=tuple(evidence),
         )
-        # Later repeats of the same value follow from this one; they are not new facts.
-        return
 
 
 def check_cursor_cycle(trace: Trace) -> Iterator[Finding]:

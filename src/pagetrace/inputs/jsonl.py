@@ -11,7 +11,7 @@ from urllib.parse import parse_qsl, urlsplit
 from pagetrace.errors import PageTraceError
 from pagetrace.inputs import as_object, filter_headers, iter_lines
 from pagetrace.limits import MAX_LINE_BYTES
-from pagetrace.model import RawObservation
+from pagetrace.model import RawObservation, canonical_text
 
 SUPPORTED_VERSION = 1
 
@@ -129,8 +129,10 @@ def query_of(request: dict[str, Any], url: str) -> dict[str, str | list[str]]:
     """
     explicit = as_object(request.get("query"))
     if explicit is not None:
+        # canonical_text, not str(): a JSON true recorded in an explicit query object must read
+        # as "true", the way it would have arrived in a URL, and null must not become "None".
         return {
-            str(name): value if isinstance(value, list) else str(value)
+            str(name): value if isinstance(value, list) else canonical_text(value)
             for name, value in explicit.items()
         }
 

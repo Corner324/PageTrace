@@ -101,6 +101,10 @@ class Observation:
         A query parameter arrives as text, so "3" is an integer observation and 3 is the same
         observation. `True` is not, even though Python says `isinstance(True, int)`, and neither
         is "3.0": inventing a rounding rule for someone else's page number is a claim.
+
+        Only ASCII digits count. `str.isdigit()` is true for characters `int()` refuses, such as
+        the superscript two, and a page number of "\u00b2" must be an observation PageTrace
+        cannot use, not a crash on trace content.
         """
         if not self.observed or isinstance(self.value, bool):
             return None
@@ -109,7 +113,7 @@ class Observation:
         if isinstance(self.value, str):
             text = self.value.strip()
             body = text[1:] if text[:1] in {"-", "+"} else text
-            if body.isdigit():
+            if body.isascii() and body.isdigit():
                 return int(text)
         return None
 
@@ -264,5 +268,18 @@ def sort_findings(findings: list[Finding]) -> list[Finding]:
 
 
 def exit_code_for(findings: list[Finding]) -> int:
-    """0 when nothing is proven, 1 when at least one violation is proven (specs/product.md)."""
-    return 1 if any(f.certainty is Certainty.PROVEN for f in findings) else 0
+    """0 unless a violation is both proven and severe (specs/product.md).
+
+    Certainty alone is not enough. A duplicate item across pages is a PROVEN observation whose
+    interpretation the finding itself declines to make, and failing a build on it would be the
+    tool claiming what its own message refuses to. Severity is what says "this is a defect if
+    true", so exit 1 needs both.
+    """
+    return (
+        1
+        if any(
+            finding.certainty is Certainty.PROVEN and finding.severity is Severity.ERROR
+            for finding in findings
+        )
+        else 0
+    )

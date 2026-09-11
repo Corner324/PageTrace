@@ -14,7 +14,7 @@ def render_terminal(trace: Trace, findings: list[Finding], source: str) -> str:
     lines = [f"{source}: {trace.page_count} pages, preset {trace.preset}", ""]
 
     if not findings:
-        lines.append("No findings. Nothing in this trace violates a checked invariant.")
+        lines.append("No findings. Nothing observable in this trace violates an invariant.")
         lines.append("")
         lines.append(_summary(findings))
         return "\n".join(lines) + "\n"

@@ -199,3 +199,32 @@ def corrupt_total(trace: Trace, delta: int) -> Trace:
         for page in trace.pages
     ]
     return _with_pages(trace, pages)
+
+
+@st.composite
+def valid_link_trace(draw: st.DrawFn, min_pages: int = 1, max_pages: int = 8) -> Trace:
+    """A run paginated by the HTTP Link header, correct by construction.
+
+    The cursor generator alone left the link preset unexercised by the central property, and
+    that is exactly where the Link parser's defects survived a green suite.
+    """
+    page_count = draw(st.integers(min_value=min_pages, max_value=max_pages))
+    host = draw(st.sampled_from(["api.example.com", "a.example", "service.test"]))
+    path = draw(st.sampled_from(["/v1/items", "/items", "/api/v2/records"]))
+    per_page = draw(
+        st.lists(st.integers(min_value=0, max_value=4), min_size=page_count, max_size=page_count)
+    )
+
+    def url(index: int) -> str:
+        return f"https://{host}{path}?limit=10&page={index + 1}"
+
+    next_id = 0
+    pages: list[Page] = []
+    for index in range(page_count):
+        ids = list(range(next_id, next_id + per_page[index]))
+        next_id += per_page[index]
+        following = url(index + 1) if index + 1 < page_count else None
+        built = _page(index, cursor=url(index), next_cursor=following, ids=ids)
+        pages.append(replace(built, url=url(index)))
+
+    return Trace(pages=tuple(pages), preset="link", source_format="har")

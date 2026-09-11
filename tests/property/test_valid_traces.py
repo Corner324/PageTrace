@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from hypothesis import given
 from hypothesis import strategies as st
-from tests.property.strategies import valid_trace
+from tests.property.strategies import valid_link_trace, valid_trace
 
 from pagetrace.checks import CHECKS, run_checks
 from pagetrace.model import Certainty, Trace
@@ -62,3 +62,16 @@ def test_evidence_paths_point_at_real_pages(trace: Trace) -> None:
     for finding in run_checks(trace):
         for index in finding.affected_pages:
             assert 0 <= index < trace.page_count
+
+
+@given(valid_link_trace())
+def test_no_proven_finding_on_a_valid_link_trace(trace: Trace) -> None:
+    """The link preset gets the same guarantee as the cursor preset, not less."""
+    assert proven(trace) == []
+
+
+@given(valid_link_trace(min_pages=3))
+def test_a_link_run_is_not_mistaken_for_a_stall(trace: Trace) -> None:
+    codes = {f.code for f in run_checks(trace)}
+    assert "CURSOR_STALLED" not in codes
+    assert "CURSOR_CYCLE" not in codes

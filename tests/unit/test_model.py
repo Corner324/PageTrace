@@ -121,6 +121,17 @@ def _finding(code: str, certainty: Certainty, pages: tuple[int, ...] = ()) -> Fi
     )
 
 
+def _severe(code: str) -> Finding:
+    return Finding(
+        code=code,
+        invariant=f"INV-TEST-{code}",
+        certainty=Certainty.PROVEN,
+        severity=Severity.ERROR,
+        message="m",
+        affected_pages=(1,),
+    )
+
+
 def test_findings_sort_strongest_first_then_by_page() -> None:
     unordered = [
         _finding("AAA", Certainty.INSUFFICIENT_EVIDENCE),
@@ -136,8 +147,23 @@ def test_sort_is_stable_across_runs() -> None:
     assert sort_findings(findings) == sort_findings(list(reversed(findings)))
 
 
-def test_exit_code_depends_only_on_proven() -> None:
+def test_exit_code_needs_both_proven_and_severe() -> None:
+    """A proven observation whose meaning the finding declines to assert must not fail a build."""
     assert exit_code_for([]) == 0
     assert exit_code_for([_finding("A", Certainty.SUSPICIOUS, (1,))]) == 0
     assert exit_code_for([_finding("A", Certainty.INSUFFICIENT_EVIDENCE)]) == 0
-    assert exit_code_for([_finding("A", Certainty.PROVEN, (1,))]) == 1
+    assert exit_code_for([_finding("A", Certainty.PROVEN, (1,))]) == 0  # severity WARNING
+    assert exit_code_for([_severe("A")]) == 1
+    assert exit_code_for([_finding("A", Certainty.SUSPICIOUS, (1,)), _severe("B")]) == 1
+
+
+def test_a_severe_finding_that_is_not_proven_does_not_fail_a_build() -> None:
+    suspicion = Finding(
+        code="A",
+        invariant="INV-TEST-A",
+        certainty=Certainty.SUSPICIOUS,
+        severity=Severity.ERROR,
+        message="m",
+        affected_pages=(1,),
+    )
+    assert exit_code_for([suspicion]) == 0

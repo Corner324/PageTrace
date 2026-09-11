@@ -15,7 +15,6 @@ from pagetrace.normalize import (
     canonical_url,
     filter_requests,
     fingerprint,
-    link_next,
     normalize,
 )
 
@@ -59,22 +58,6 @@ def test_link_preset_uses_url_and_link_header() -> None:
 
     assert page.request_cursor.value == "https://api.example/items?cursor=abc"
     assert page.next_cursor.value == "https://api.example/items?cursor=def"
-
-
-def test_link_header_without_rel_next_declares_termination() -> None:
-    """A last page says so by omitting rel=next; that is an observation, not an absence."""
-    observation = link_next({"link": '<https://api.example/items>; rel="prev"'})
-    assert observation.observed
-    assert observation.is_null
-
-
-def test_absent_link_header_is_not_observed() -> None:
-    assert link_next({}).status is ObservationStatus.NOT_FOUND
-
-
-def test_link_header_with_several_relations() -> None:
-    header = '<https://a.example/p1>; rel="prev", <https://a.example/p3>; rel="next"'
-    assert link_next({"link": header}).value == "https://a.example/p3"
 
 
 @pytest.mark.parametrize(

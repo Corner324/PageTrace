@@ -151,3 +151,46 @@ def test_the_json_report_names_the_input_format(
 
     report: Any = json.loads(capsys.readouterr().out)
     assert report["input"]["format"] == "har"
+
+
+def preflight(url: str) -> Any:
+    """A CORS preflight, as a browser records it: same URL, same query, 204, no body."""
+    return {
+        "request": {"method": "OPTIONS", "url": url, "headers": []},
+        "response": {"status": 204, "headers": [], "content": {}},
+    }
+
+
+def test_cors_preflights_are_not_pages(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    """A preflight repeats the URL of the request after it, and used to read as a stall."""
+    first = "https://api.example.com/v1/items"
+    second = "https://api.example.com/v1/items?cursor=c2"
+    path = write_har(
+        tmp_path,
+        preflight(first),
+        har_entry(first, body={"items": [{"id": 1}], "next_cursor": "c2"}),
+        preflight(second),
+        har_entry(second, body={"items": [{"id": 2}], "next_cursor": None}),
+    )
+
+    assert main(["check", str(path), "--url-filter", "api.example.com"]) == EXIT_OK
+    out = capsys.readouterr().out
+    assert "2 pages" in out
+    assert "CURSOR_STALLED" not in out
+
+
+def test_a_failed_request_is_reported_as_unchecked(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """Silence about a page nobody could read used to look like a clean result."""
+    path = write_har(
+        tmp_path,
+        har_entry("https://api.example.com/v1/items", body={"items": [], "next_cursor": "c2"}),
+        har_entry("https://api.example.com/v1/items?cursor=c2", status=503),
+        har_entry("https://api.example.com/v1/items?cursor=c9", body={"items": []}),
+    )
+
+    assert main(["check", str(path), "--url-filter", "api.example.com"]) == EXIT_OK
+    out = capsys.readouterr().out
+    assert "REQUESTS_EXCLUDED_FROM_ANALYSIS" in out
+    assert "1 of 3 requests" in out

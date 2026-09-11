@@ -116,7 +116,9 @@ def _query(request: dict[str, Any], url: str) -> dict[str, str | list[str]]:
     from pagetrace.inputs.jsonl import query_of
 
     recorded = as_array(request.get("queryString"))
-    if recorded is None:
+    if not recorded:
+        # Some exporters write an empty array for every entry. Treating that as "this request
+        # had no parameters" would silently blind every request-side selector.
         return query_of({}, url)
 
     parsed: dict[str, str | list[str]] = {}

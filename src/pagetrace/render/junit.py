@@ -10,7 +10,7 @@ from __future__ import annotations
 from xml.etree.ElementTree import Element, SubElement, tostring
 
 from pagetrace.checks import INVARIANT_IDS
-from pagetrace.model import Certainty, Finding, Trace
+from pagetrace.model import Certainty, Finding, Severity, Trace
 from pagetrace.render import display
 
 
@@ -35,22 +35,24 @@ def render_junit(trace: Trace, findings: list[Finding]) -> str:
             classname=f"pagetrace.{trace.preset}",
             name=invariant,
         )
-        if proven:
+        severe = [f for f in proven if f.severity is Severity.ERROR]
+        if severe:
             failures += 1
             failure = SubElement(
                 case,
                 "failure",
-                message=_summary(proven),
-                type=proven[0].code,
+                message=_summary(severe),
+                type=severe[0].code,
             )
-            failure.text = _detail(proven)
-        elif missing and not unproven:
+            failure.text = _detail(severe)
+        elif missing and not unproven and not proven:
             skipped += 1
             SubElement(case, "skipped", message=_summary(missing))
 
-        if unproven:
+        noted = unproven + [f for f in proven if f.severity is not Severity.ERROR]
+        if noted:
             note = SubElement(case, "system-out")
-            note.text = _detail(unproven)
+            note.text = _detail(noted)
 
     suite.set("tests", str(len(by_invariant)))
     suite.set("failures", str(failures))

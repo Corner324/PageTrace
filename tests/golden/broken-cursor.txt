@@ -6,7 +6,7 @@ PROVEN ERROR CURSOR_CONTINUATION_MISMATCH [INV-CURSOR-001] pages 1, 2
   page[2].request.cursor = "eyJvIjozfQ"
 
 PROVEN WARNING DUPLICATE_ITEM_ACROSS_PAGES [INV-ITEM-001] pages 1, 2
-  Item 3 was observed on page 1 and again on page 2. That the same item appears twice is a fact; whether it means overlapping pages depends on a uniqueness contract this trace does not contain.
+  An item observed on page 1 was observed again on page 2; its identity is in the evidence below. That the same item appears twice is a fact; whether it means overlapping pages depends on a uniqueness contract this trace does not contain.
   page[1].items[0].id = 3
   page[2].items[0].id = 3
 

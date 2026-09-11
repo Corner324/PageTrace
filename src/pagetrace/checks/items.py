@@ -41,10 +41,10 @@ def check_duplicate_items(trace: Trace) -> Iterator[Finding]:
                 certainty=Certainty.PROVEN,
                 severity=Severity.WARNING,
                 message=(
-                    f"Item {identity.text} was observed on page {earlier.page_index} and again "
-                    f"on page {identity.page_index}. That the same item appears twice is a "
-                    f"fact; whether it means overlapping pages depends on a uniqueness "
-                    f"contract this trace does not contain."
+                    f"An item observed on page {earlier.page_index} was observed again on page "
+                    f"{identity.page_index}; its identity is in the evidence below. That the "
+                    f"same item appears twice is a fact; whether it means overlapping pages "
+                    f"depends on a uniqueness contract this trace does not contain."
                 ),
                 affected_pages=(earlier.page_index, identity.page_index),
                 evidence=(

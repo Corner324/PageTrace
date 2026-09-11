@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 from jsonpath import JSONPathEnvironment, JSONPathError
 
@@ -69,12 +69,18 @@ class Selector:
 
 
 def _values(selector: Selector, data: object) -> list[Any]:
+    if not isinstance(data, dict | list):
+        # Only a JSON container can be queried. Handing the engine a string would be worse than
+        # useless: it treats a string as a JSON document to parse, so a text body that happens to
+        # contain JSON would be read into as though it were the response, and a malformed one
+        # would raise out of the core on trace content.
+        return []
     if selector.field is not None:
         if isinstance(data, dict) and selector.field in data:
             return [data[selector.field]]  # pyright: ignore[reportUnknownArgumentType, reportUnknownVariableType]
         return []
-    # finditer accepts any JSON value; a non-container simply yields no nodes.
-    return [match.value for match in selector.query.finditer(data)]  # pyright: ignore[reportArgumentType]
+    document = cast("dict[str, Any] | list[Any]", data)
+    return [match.value for match in selector.query.finditer(document)]
 
 
 def select_scalar(selector: Selector | None, data: object, path: str) -> Observation:

@@ -12,6 +12,7 @@ from pagetrace.checks.continuation import (
     check_trace_ends_with_continuation,
     check_trace_ends_with_has_more,
 )
+from pagetrace.checks.coverage import check_excluded_requests
 from pagetrace.checks.cursors import (
     check_cursor_continuation,
     check_cursor_cycle,
@@ -39,6 +40,7 @@ CHECKS: tuple[Check, ...] = (
     check_empty_page_with_has_more,
     check_trace_ends_with_continuation,
     check_total_discrepancy,
+    check_excluded_requests,
 )
 
 
@@ -56,6 +58,7 @@ INVARIANT_IDS: tuple[str, ...] = (
     "INV-CONT-001",
     "INV-CONT-002",
     "INV-TRACE-001",
+    "INV-TRACE-002",
     "INV-TOTAL-001",
 )
 

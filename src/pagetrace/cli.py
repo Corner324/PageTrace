@@ -90,7 +90,7 @@ def analyze(args: argparse.Namespace) -> Trace:
         },
     )
     source_format = detect_format(args.trace) if args.input_format == "auto" else args.input_format
-    raws = filter_requests(read_trace(args.trace, args.input_format), args.url_filter)
+    raws = filter_requests(read_trace(args.trace, source_format), args.url_filter)
     if not raws:
         raise PageTraceError(f"no requests left to analyze after --url-filter {args.url_filter!r}")
     return build_trace(raws, selectors, args.preset, source_format)

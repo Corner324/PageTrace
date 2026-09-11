@@ -17,8 +17,10 @@ from pagetrace.selectors import Selector, select_scalar, single_name
 
 NAMES = st.sampled_from(["id", "next", "_x", "a1", "total", "missing"])
 
+# Containers only. A scalar document is never handed to the engine in production, and the
+# engine would try to parse a string as JSON if it were.
 json_values = st.recursive(
-    st.none() | st.booleans() | st.integers() | st.text(max_size=8),
+    st.dictionaries(NAMES, st.none() | st.booleans() | st.integers() | st.text(max_size=8)),
     lambda children: st.lists(children, max_size=3) | st.dictionaries(NAMES, children, max_size=4),
     max_leaves=8,
 )
@@ -95,3 +97,14 @@ def test_a_compound_expression_still_uses_the_engine(document: object) -> None:
     assert observation.observed == (
         len(expected) == 1 and (expected[0] is None or not isinstance(expected[0], list | dict))
     )
+
+
+@pytest.mark.parametrize("document", ["", "{", "text", '{"id": 1}', 5, True, None, 1.5])
+def test_a_scalar_document_yields_nothing_on_either_path(document: object) -> None:
+    """A body that is not a container is not a document to read into, and never raises.
+
+    The engine parses a string argument as JSON, which both crashed on malformed text and
+    silently read a JSON-shaped text body as though it were the response.
+    """
+    assert not select_scalar(Selector.compile("--id", "$.id"), document, "p").observed
+    assert not select_scalar(Selector.compile("--next", "$.a.b"), document, "p").observed

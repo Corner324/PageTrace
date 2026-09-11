@@ -1,5 +1,5 @@
 clean-cursor.jsonl: 3 pages, preset cursor
 
-No findings. Nothing in this trace violates a checked invariant.
+No findings. Nothing observable in this trace violates an invariant.
 
 0 proven, 0 suspicious, 0 insufficient evidence

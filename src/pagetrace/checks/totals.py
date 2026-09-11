@@ -72,14 +72,24 @@ def check_total_discrepancy(trace: Trace) -> Iterator[Finding]:
     if observed == declared:
         return
 
-    exact = fully_identified and not has_duplicates
+    # A request that failed means a window of results was never seen at all. Counting the pages
+    # that did come back and calling the difference proven would be exactly the over-claim this
+    # project exists to avoid.
+    complete = len(pages) == trace.page_count
+    exact = fully_identified and not has_duplicates and complete
     yield Finding(
         code="TOTAL_COUNT_DISCREPANCY",
         invariant="INV-TOTAL-001",
         certainty=Certainty.PROVEN if exact else Certainty.SUSPICIOUS,
         severity=Severity.WARNING,
         message=_message(
-            declared, raw, distinct, len(pages), exact=exact, duplicates=has_duplicates
+            declared,
+            raw,
+            distinct,
+            len(pages),
+            exact=exact,
+            duplicates=has_duplicates,
+            failed_requests=trace.page_count - len(pages),
         ),
         affected_pages=tuple(page.index for page in pages[:1]),
         evidence=(
@@ -92,14 +102,23 @@ def check_total_discrepancy(trace: Trace) -> Iterator[Finding]:
 
 
 def _stable_total(pages: list[Page]) -> int | None:
-    """The declared total, when every page that declares one declares the same."""
+    """The declared total, when every page that declares one declares the same integer.
+
+    A page whose total is observed but is not an integer makes the whole thing unusable: taking
+    the integer from the other pages would be choosing which observation to believe.
+    """
+    if any(page.total.observed and page.total.int_value is None for page in pages):
+        return None
     values = {page.total.int_value for page in pages if page.total.int_value is not None}
     return values.pop() if len(values) == 1 else None
 
 
 def _total_changes(pages: list[Page]) -> bool:
-    values = {page.total.int_value for page in pages if page.total.int_value is not None}
-    return len(values) > 1
+    """The declared total is observed more than once and does not agree with itself."""
+    declared = [page.total for page in pages if page.total.observed]
+    if len(declared) < 2:
+        return False
+    return len({observation.text for observation in declared}) > 1
 
 
 def _message(
@@ -110,21 +129,32 @@ def _message(
     *,
     exact: bool,
     duplicates: bool,
+    failed_requests: int = 0,
 ) -> str:
-    counted = (
-        f"{distinct} distinct items" if exact else f"{raw} items ({distinct} of them distinct)"
-    )
+    if exact:
+        counted = f"{distinct} distinct items"
+    elif distinct:
+        counted = f"{raw} items, {distinct} of which could be told apart,"
+    else:
+        # "0 of them distinct" would read as a count of items rather than as the absence of
+        # observable identity.
+        counted = f"{raw} items, none of which carried an observable identity,"
     message = (
         f"The trace declares a total of {declared}, and {counted} were observed across "
         f"{page_count} pages. PageTrace does not know whether the total counts the same "
         f"population under the same filters, so this is a difference between two numbers, not "
         f"a count of records that went missing."
     )
+    if failed_requests:
+        message += (
+            f" {failed_requests} request(s) in this trace did not return a result page, so a "
+            f"window of items was never observed."
+        )
     if duplicates:
         message += (
             " Some items appear on more than one page, which changes what the total should be "
             "compared against."
         )
-    elif not exact:
+    elif not exact and not failed_requests:
         message += " Some items had no observable identity, so they could not be deduplicated."
     return message

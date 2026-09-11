@@ -45,6 +45,37 @@ JSON `schema_version` and the JSONL v1 input format are a public contract
   errors, never tracebacks.
 - No networking code or dependency exists in the package.
 
+### Correctness fixes found by review before release
+
+An independent reviewer and an adversarial critic, each starting from the specification rather
+than from the implementation, found eleven defects on a suite that was already green. All are
+fixed with a regression test naming what the defect used to do
+(`tests/unit/test_regressions.py`, `tests/unit/test_link_header.py`).
+
+- The Link header is now parsed per RFC 8288. A relative target is resolved against the request
+  URL, a comma inside a quoted parameter no longer splits the header, `rel="next-archive"` is
+  no longer read as `next`, and a header that cannot be parsed is reported as missing evidence
+  instead of as "the server declared the end".
+- A page number of `"²"` used to raise `ValueError` out of the core: `str.isdigit()` is
+  true for characters `int()` refuses. Only ASCII digits count now.
+- A response body recorded as text used to be handed to the JSONPath engine, which parses a
+  string as a JSON document. Malformed text crashed, and text containing JSON was read as
+  though it were the response. Only containers are queried now.
+- An item identity is no longer interpolated into a finding's message, so terminal escapes in
+  an id can no longer reach a terminal or break JUnit XML. Messages never carry trace values.
+- `OPTIONS` and `HEAD` requests are dropped before pages are numbered. A browser HAR puts a CORS
+  preflight in front of every cross-origin request, and it used to read as a stalled cursor.
+- A declared total is no longer compared as PROVEN when a request in the trace failed, or when
+  another page declares a total that is not an integer.
+- A stall on a second cursor value, and a second run of identical responses after a failed
+  request, used to go unreported.
+- An offset contract witnessed only after the violation no longer proves it.
+- Requests excluded from analysis are reported (INV-TRACE-002). A trace of nothing but failures
+  used to produce the same silence as a trace that was fine.
+- `exit 1` now requires a finding that is both `PROVEN` and `ERROR`. A duplicate item is a
+  proven observation whose meaning the finding itself declines to assert, and failing a build on
+  it would be the tool claiming what its message refuses to.
+
 ### Performance
 
 - Single-name selectors are resolved without the JSONPath engine's node machinery, held to the

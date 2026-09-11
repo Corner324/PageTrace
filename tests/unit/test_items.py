@@ -36,10 +36,25 @@ def test_the_message_states_the_observation_and_hedges_the_meaning() -> None:
     """A duplicate proves a duplicate, not a pagination defect."""
     (finding,) = run(page(0, item_ids=[7]), page(1, item_ids=[7]))
 
-    assert "was observed on page 0 and again on page 1" in finding.message
+    assert "observed on page 0 was observed again on page 1" in finding.message
     assert "depends on a uniqueness contract" in finding.message
     assert "broken" not in finding.message
     assert "bug" not in finding.message
+
+
+def test_the_item_value_stays_out_of_the_message() -> None:
+    """Messages are written by PageTrace; only evidence carries text from the trace.
+
+    A value interpolated into a message would skip the escaping and truncation that `display()`
+    applies to evidence, which put raw terminal escapes on screen and produced invalid JUnit XML.
+    """
+    hostile = "[31mHACK[0m" + "A" * 500
+    (finding,) = run(page(0, item_ids=[hostile]), page(1, item_ids=[hostile]))
+
+    assert "" not in finding.message
+    assert "HACK" not in finding.message
+    assert len(finding.message) < 300
+    assert finding.evidence[0].value == hostile
 
 
 def test_a_repeat_inside_one_page_is_not_claimed() -> None:

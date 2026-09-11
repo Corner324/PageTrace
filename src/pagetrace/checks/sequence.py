@@ -19,16 +19,17 @@ def check_page_progression(trace: Trace) -> Iterator[Finding]:
         return
 
     unobserved = 0
+    jump: Finding | None = None
     for earlier, later in transitions(trace):
         before, after = earlier.page_number.int_value, later.page_number.int_value
         if before is None or after is None:
             unobserved += 1
             continue
         delta = after - before
-        if delta == 1:
+        if delta == 1 or jump is not None:
             continue
 
-        yield Finding(
+        jump = Finding(
             code="PAGE_NUMBER_JUMP",
             invariant="INV-PAGE-001",
             certainty=Certainty.PROVEN,
@@ -44,7 +45,9 @@ def check_page_progression(trace: Trace) -> Iterator[Finding]:
                 Evidence("trace.page_number_delta", delta),
             ),
         )
-        return
+
+    if jump is not None:
+        yield jump
 
     if unobserved:
         yield insufficient(
@@ -68,7 +71,7 @@ def check_offset_progression(trace: Trace) -> Iterator[Finding]:
         return
 
     contract_seen = False
-    violation: tuple[Page, Page, int, int, int] | None = None
+    violation: tuple[Page, Page, int, int, int, bool] | None = None
     unobserved = 0
 
     for earlier, later in transitions(trace):
@@ -82,11 +85,13 @@ def check_offset_progression(trace: Trace) -> Iterator[Finding]:
         if after == expected:
             contract_seen = True
         elif violation is None:
-            violation = (earlier, later, before, after, expected)
+            # The witness has to come first. A transition that follows the violation shows the
+            # contract held later, not that it was established when the violation happened,
+            # and INV-OFFSET-001 says "at least one earlier transition".
+            violation = (earlier, later, before, after, expected, contract_seen)
 
     if violation is not None:
-        earlier, later, before, after, expected = violation
-        proven = contract_seen
+        earlier, later, before, after, expected, proven = violation
         yield Finding(
             code="OFFSET_JUMP",
             invariant="INV-OFFSET-001",
@@ -129,14 +134,16 @@ def check_identical_responses(trace: Trace) -> Iterator[Finding]:
     Never more than suspicious: identical bodies are equally consistent with a stuck paginator,
     a cache, and a resource that genuinely did not change.
     """
-    reported_previous = False
+    run_continues_at = -1
     for earlier, later in transitions(trace):
         identical = earlier.fingerprint is not None and earlier.fingerprint == later.fingerprint
         if not identical:
-            reported_previous = False
             continue
-        if reported_previous:
-            # A run of identical pages is one observation, not one per pair.
+        if earlier.index == run_continues_at:
+            # A run of identical pages is one observation, not one per pair. The run is tracked
+            # by page index rather than by a flag: pairs are skipped when a page in between
+            # failed, and a stale flag would swallow the next run entirely.
+            run_continues_at = later.index
             continue
         if _both_empty(earlier, later):
             continue
@@ -144,7 +151,7 @@ def check_identical_responses(trace: Trace) -> Iterator[Finding]:
             # The stall (INV-CURSOR-002) is the more specific fact about this pair.
             continue
 
-        reported_previous = True
+        run_continues_at = later.index
         yield Finding(
             code="IDENTICAL_CONSECUTIVE_RESPONSES",
             invariant="INV-RESP-001",
