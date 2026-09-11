@@ -9,14 +9,14 @@ from __future__ import annotations
 from tests.factories import cursor_pages, page, trace
 
 from pagetrace.checks.cursors import check_cursor_continuation
-from pagetrace.model import Certainty, ObservationStatus
+from pagetrace.model import Certainty, ObservationStatus, Page
 
 MISMATCH = "CURSOR_CONTINUATION_MISMATCH"
 NOT_OBSERVABLE = "CURSOR_CONTINUATION_NOT_OBSERVABLE"
 
 
-def codes(*pages: object) -> list[str]:
-    return [f.code for f in check_cursor_continuation(trace(*pages))]  # pyright: ignore[reportArgumentType]
+def codes(*pages: Page) -> list[str]:
+    return [finding.code for finding in check_cursor_continuation(trace(*pages))]
 
 
 def test_a_correct_run_is_silent() -> None:

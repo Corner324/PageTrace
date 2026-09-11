@@ -7,11 +7,19 @@ system: order is fixed, so adding a detector is one import and one line.
 from __future__ import annotations
 
 from pagetrace.checks.base import Check
-from pagetrace.checks.cursors import check_cursor_continuation
+from pagetrace.checks.cursors import (
+    check_cursor_continuation,
+    check_cursor_cycle,
+    check_cursor_stalled,
+)
 from pagetrace.model import Finding, Trace, sort_findings
 
 # A diff of this tuple is the complete list of what PageTrace can say.
-CHECKS: tuple[Check, ...] = (check_cursor_continuation,)
+CHECKS: tuple[Check, ...] = (
+    check_cursor_continuation,
+    check_cursor_stalled,
+    check_cursor_cycle,
+)
 
 
 def run_checks(trace: Trace) -> list[Finding]:
