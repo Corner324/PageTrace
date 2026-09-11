@@ -332,7 +332,6 @@ def normalize(raw: RawObservation, selectors: SelectorSet, preset: str) -> Page:
         has_more=select_scalar(selectors.has_more, body, "response.has_more"),
         items=items,
         fingerprint=fingerprint(body),
-        body_present=raw.body_present,
     )
 
 

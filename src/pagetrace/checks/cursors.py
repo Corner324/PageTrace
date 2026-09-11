@@ -20,7 +20,9 @@ def check_cursor_continuation(trace: Trace) -> Iterator[Finding]:
         return
 
     unobserved = 0
+    considered = 0
     for earlier, later in transitions(trace):
+        considered += 1
         offered = earlier.next_cursor
         used = later.request_cursor
 
@@ -56,9 +58,10 @@ def check_cursor_continuation(trace: Trace) -> Iterator[Finding]:
             code="CURSOR_CONTINUATION_NOT_OBSERVABLE",
             invariant="INV-CURSOR-001",
             message=(
-                f"{unobserved} of {max(trace.page_count - 1, 0)} transitions could not be "
-                f"checked for a continuation mismatch: the returned or the requested cursor "
-                f"was not observable. Check --next and --cursor."
+                f"{unobserved} of {considered} checkable transitions had no observable "
+                f"continuation cursor on one side or the other. Check --next and --cursor. "
+                f"Transitions touching a failed request are not counted here; INV-TRACE-002 "
+                f"reports those."
             ),
         )
 

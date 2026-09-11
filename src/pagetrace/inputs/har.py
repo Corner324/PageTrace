@@ -73,7 +73,6 @@ def _build(entry: dict[str, Any], index: int, name: str) -> RawObservation:
         raise PageTraceError(f"{name}: entry {index} has no integer response.status")
 
     method = request.get("method")
-    body, body_present = _body(response, index, name)
 
     return RawObservation(
         index=index,
@@ -82,8 +81,7 @@ def _build(entry: dict[str, Any], index: int, name: str) -> RawObservation:
         query=_query(request, url),
         status=status,
         headers=_headers(response.get("headers")),
-        body=body,
-        body_present=body_present,
+        body=_body(response, index, name),
     )
 
 
@@ -140,15 +138,15 @@ def _query(request: dict[str, Any], url: str) -> dict[str, str | list[str]]:
     return parsed
 
 
-def _body(response: dict[str, Any], index: int, name: str) -> tuple[object, bool]:
-    """Decode response content into parsed JSON, or report it as present but unusable."""
+def _body(response: dict[str, Any], index: int, name: str) -> object:
+    """Decode response content into parsed JSON, or None when there is nothing to read."""
     content = as_object(response.get("content"))
     if content is None:
-        return None, False
+        return None
 
     text = content.get("text")
     if not isinstance(text, str):
-        return None, False
+        return None
 
     base64_encoded = content.get("encoding") == "base64"
     decoded = _decode_base64(text, index, name) if base64_encoded else text
@@ -159,10 +157,11 @@ def _body(response: dict[str, Any], index: int, name: str) -> tuple[object, bool
         )
 
     try:
-        return json.loads(decoded), True
+        return json.loads(decoded)
     except (json.JSONDecodeError, RecursionError):
-        # A non-JSON body is recorded as present but carries no observations.
-        return None, True
+        # A body that is not JSON carries no observations. It is not an error: plenty of entries
+        # in a HAR are HTML or an image.
+        return None
 
 
 def _decode_base64(text: str, index: int, name: str) -> str:

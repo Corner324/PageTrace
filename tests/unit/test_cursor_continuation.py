@@ -84,7 +84,7 @@ def test_missing_evidence_is_summarized_once() -> None:
 
     assert [f.code for f in findings] == [NOT_OBSERVABLE]
     assert findings[0].certainty is Certainty.INSUFFICIENT_EVIDENCE
-    assert "2 of 2 transitions" in findings[0].message
+    assert "2 of 2 checkable transitions" in findings[0].message
 
 
 def test_ambiguous_cursor_is_not_a_mismatch() -> None:

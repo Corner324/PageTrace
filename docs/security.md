@@ -10,7 +10,7 @@ A HAR or JSONL trace is an untrusted, secret-bearing file. Treat it that way.
 | Deep JSON | nesting depth limit at the parser |
 | Huge strings | cap extracted and rendered value sizes |
 | Terminal escape injection | escape control characters in every rendered value |
-| Authorization headers, cookies | header allowlist at parse time: only `link` and `content-type` enter the model |
+| Authorization headers, cookies | header allowlist at parse time: only `link` enters the model |
 | API keys / secrets in bodies | raw bodies never rendered; only selected scalars, truncated |
 | Malicious JSONPath | RFC 9535 compliant parser; no `eval` |
 | Code execution | JSON only; no pickle, no templates, no `eval` |
@@ -26,10 +26,16 @@ truncated, never multiline raw. Prefer `cursor="eyJ..." (37 chars)` over the ful
 
 ## Header allowlist, not a denylist
 
-Parsers keep exactly two response headers: `link` (needed by the `link` preset) and
-`content-type`. Everything else, including `authorization`, `cookie` and `set-cookie`, is
-dropped before the model is built. A denylist would leak the next secret header somebody
-invents; an allowlist cannot.
+Parsers keep exactly one response header, `link`, because exactly one is read: the link preset
+needs it. Everything else, including `authorization`, `cookie` and `set-cookie`, is dropped
+before the model is built. A denylist would leak the next secret header somebody invents; an
+allowlist cannot, and an allowlist with an unused entry on it is surface for nothing.
+
+The one place a denylist appears is the opposite direction: `SECRET_QUERY_PARAMETERS` in
+`normalize.py` blanks credential-shaped query values before a URL is shown as evidence under
+the link preset. That is display of a value the user pointed PageTrace at, where redacting
+everything would leave a finding that proves nothing, so the trade runs the other way. An
+unusual parameter name is not caught.
 
 ## Diagnostic policy
 

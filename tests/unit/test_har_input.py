@@ -54,7 +54,6 @@ def test_reads_an_entry(tmp_path: Path) -> None:
     assert observation.index == 0
     assert observation.status == 200
     assert observation.body == {"items": [], "next_cursor": "d"}
-    assert observation.body_present
 
 
 def test_query_comes_from_the_recorded_query_string(tmp_path: Path) -> None:
@@ -122,11 +121,11 @@ def test_an_oversized_plain_body_is_refused(
         list(read_har(write(tmp_path, entry(text="y" * 4096))))
 
 
-def test_a_non_json_body_is_present_but_carries_no_observations(tmp_path: Path) -> None:
+def test_a_body_that_is_not_json_carries_no_observations(tmp_path: Path) -> None:
+    """Plenty of HAR entries are HTML or an image; that is not an error."""
     (observation,) = read_har(write(tmp_path, entry(text="<html>not json</html>")))
 
     assert observation.body is None
-    assert observation.body_present
 
 
 def test_an_entry_without_content_has_no_body(tmp_path: Path) -> None:
@@ -135,7 +134,6 @@ def test_an_entry_without_content_has_no_body(tmp_path: Path) -> None:
     (observation,) = read_har(write(tmp_path, record))
 
     assert observation.body is None
-    assert not observation.body_present
 
 
 MALFORMED: list[tuple[Any, str]] = [
@@ -229,7 +227,7 @@ def test_content_without_text_has_no_body(tmp_path: Path) -> None:
     record = entry()
     record["response"]["content"] = {"mimeType": "application/json", "size": 0}
     (observation,) = read_har(write(tmp_path, record))
-    assert not observation.body_present
+    assert observation.body is None
 
 
 def test_bounding_the_encoded_length_bounds_the_decoded_one(
@@ -244,10 +242,10 @@ def test_bounding_the_encoded_length_bounds_the_decoded_one(
     with pytest.raises(PageTraceError, match="larger than the 64 byte limit"):
         list(read_har(write(tmp_path, entry(encoding="base64", text=encoded))))
 
-    fitting = base64.b64encode(b"z" * 24).decode("ascii")
+    fitting = base64.b64encode(b'{"items": []}').decode("ascii")
     assert len(fitting) <= 64
     (observation,) = read_har(write(tmp_path, entry(encoding="base64", text=fitting)))
-    assert observation.body_present
+    assert observation.body == {"items": []}
 
 
 def test_a_non_string_url_is_a_usage_error(tmp_path: Path) -> None:

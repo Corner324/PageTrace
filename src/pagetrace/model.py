@@ -177,7 +177,6 @@ class RawObservation:
     status: int
     headers: dict[str, str]
     body: object = None
-    body_present: bool = False
 
     @property
     def request_context(self) -> dict[str, object]:
@@ -200,7 +199,6 @@ class Page:
     has_more: Observation = Observation("response.has_more", ObservationStatus.NOT_CONFIGURED)
     items: ItemsObservation = ItemsObservation(ObservationStatus.NOT_CONFIGURED)
     fingerprint: str | None = None
-    body_present: bool = False
 
     @property
     def ok(self) -> bool:

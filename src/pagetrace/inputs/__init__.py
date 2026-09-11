@@ -12,9 +12,10 @@ from typing import Any, cast
 from pagetrace.errors import PageTraceError
 from pagetrace.model import RawObservation
 
-# Only these response headers reach the model. An allowlist cannot leak the next secret header
-# somebody invents; a denylist can. See docs/security.md.
-HEADER_ALLOWLIST = frozenset({"link", "content-type"})
+# Exactly one response header reaches the model, because exactly one is read: `link`, by the
+# link preset. An allowlist cannot leak the next secret header somebody invents; a denylist can.
+# Keeping an unused header here "in case" would widen the surface for nothing.
+HEADER_ALLOWLIST = frozenset({"link"})
 
 
 def read_trace(path: Path, input_format: str) -> list[RawObservation]:

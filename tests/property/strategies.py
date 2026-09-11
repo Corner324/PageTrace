@@ -60,7 +60,6 @@ def _page(
             identities=identities,
         ),
         fingerprint=f"fp-{index}-{'-'.join(str(i) for i in ids)}",
-        body_present=True,
     )
 
 

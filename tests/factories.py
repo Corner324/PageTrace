@@ -38,7 +38,6 @@ def raw(
         status=status,
         headers=headers or {},
         body=body,
-        body_present=body is not None,
     )
 
 
@@ -118,7 +117,6 @@ def page(
         has_more=build("response.has_more", has_more),
         items=resolved_items,
         fingerprint=fingerprint,
-        body_present=True,
     )
 
 

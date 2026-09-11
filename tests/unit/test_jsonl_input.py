@@ -39,7 +39,6 @@ def test_reads_a_minimal_record(tmp_path: Path) -> None:
     assert observation.status == 200
     assert observation.url.endswith("cursor=abc")
     assert observation.body == {"items": [{"id": 1}], "next": "def"}
-    assert observation.body_present
 
 
 def test_query_is_parsed_from_the_url(tmp_path: Path) -> None:
@@ -96,8 +95,9 @@ def test_response_headers_are_allowlisted(tmp_path: Path) -> None:
 def test_filter_headers_ignores_odd_shapes() -> None:
     assert filter_headers(None) == {}
     assert filter_headers(["link"]) == {}
-    assert filter_headers({"link": 5, 7: "x", "Content-Type": "application/json"}) == {
-        "content-type": "application/json"
+    assert filter_headers({"link": 5, 7: "x", "Content-Type": "application/json"}) == {}
+    assert filter_headers({"Link": "<https://a.example/p2>; rel=next"}) == {
+        "link": "<https://a.example/p2>; rel=next"
     }
 
 

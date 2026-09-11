@@ -95,7 +95,6 @@ def _build(record: dict[str, Any], line_number: int, index: int) -> RawObservati
         )
 
     method = request.get("method")
-    body_present = "body" in response or record_flag(response, "body_present")
 
     return RawObservation(
         index=index,
@@ -105,13 +104,7 @@ def _build(record: dict[str, Any], line_number: int, index: int) -> RawObservati
         status=status,
         headers=filter_headers(response.get("headers")),
         body=response.get("body"),
-        body_present=body_present,
     )
-
-
-def record_flag(container: dict[str, Any], name: str) -> bool:
-    value: object = container.get(name)
-    return value is True
 
 
 def _require_object(record: dict[str, Any], name: str, line_number: int) -> dict[str, Any]:

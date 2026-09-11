@@ -96,5 +96,4 @@ def observations(shape: Shape) -> Iterator[RawObservation]:
                 "next_cursor": following,
                 "has_more": index + 1 < shape.pages,
             },
-            body_present=True,
         )
