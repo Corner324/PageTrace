@@ -140,6 +140,29 @@ class ItemsObservation:
 
 
 @dataclass(frozen=True, slots=True)
+class RawObservation:
+    """One request/response pair as read from a trace file, before any selector runs.
+
+    This is the only object that ever holds a response body, and parsers build it with a header
+    allowlist already applied. Detectors never see it: `Trace` and `Page` do not reference it.
+    """
+
+    index: int
+    method: str
+    url: str
+    query: dict[str, str | list[str]]
+    status: int
+    headers: dict[str, str]
+    body: object = None
+    body_present: bool = False
+
+    @property
+    def request_context(self) -> dict[str, object]:
+        """What a request-side selector is evaluated against."""
+        return {"method": self.method, "url": self.url, "query": self.query}
+
+
+@dataclass(frozen=True, slots=True)
 class Page:
     """One request/response pair, normalized. The unit every detector reasons about."""
 
