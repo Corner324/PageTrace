@@ -36,7 +36,7 @@ jobs:
       - uses: astral-sh/setup-uv@v6
       - run: uv sync
       - run: uv run python -m benchmarks.bench_pipeline --json benchmark-results/nightly.json
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: benchmark-results
           path: benchmark-results/
