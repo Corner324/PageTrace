@@ -20,7 +20,9 @@ classifiers = [
 ]
 # Runtime dependencies: none on purpose. Every addition needs an ADR-level justification
 # (see docs/engineering-principles.md #5). Planned, not yet added: RFC 9535 JSONPath, ijson.
-dependencies = []
+dependencies = [
+    "python-jsonpath>=2.2.1",
+]
 
 [project.scripts]
 pagetrace = "pagetrace.cli:main"
