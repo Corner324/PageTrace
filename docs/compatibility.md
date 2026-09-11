@@ -23,6 +23,17 @@ Terminal output is not a contract; scripts should consume JSON.
 SemVer. Pre-1.0 releases are `0.x`. Every release: wheel + sdist built once in CI, attested,
 published via PyPI Trusted Publishing. Never from a laptop.
 
+## Releasing
+
+1. `CHANGELOG.md` describes the version, and `pyproject.toml` carries it.
+2. Push the tag `vX.Y.Z`. That triggers `.github/workflows/release.yml`, which reruns every
+   gate with the extended property profile, builds once, smoke-installs the built wheel,
+   attests the artifacts, and publishes through OIDC.
+3. Before the first publish ever happens, the PyPI project must have a trusted publisher
+   configured for this repository and the `pypi` environment, and no API token anywhere.
+   Until that is done the publish job is expected to fail, and failing is the correct
+   behavior: there is no token fallback by design.
+
 ## Branching
 
 `main` plus short-lived feature branches, squash merge. No `develop`, no release branches.
