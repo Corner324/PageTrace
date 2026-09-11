@@ -10,6 +10,7 @@ from hypothesis import assume, given
 from hypothesis import strategies as st
 from tests.property.strategies import (
     change_next_cursor,
+    corrupt_total,
     drop_last_page,
     duplicate_item,
     duplicate_response,
@@ -117,3 +118,14 @@ def test_a_duplicated_response_is_at_most_suspicious(trace: Trace, data: st.Data
     identical = [f for f in run_checks(mutated) if f.code == "IDENTICAL_CONSECUTIVE_RESPONSES"]
     assert all(f.certainty is Certainty.SUSPICIOUS for f in identical)
     assert "IDENTICAL_CONSECUTIVE_RESPONSES" not in codes(proven(mutated))
+
+
+@given(valid_trace(min_pages=1, with_total=True), st.integers(min_value=1, max_value=50))
+def test_a_corrupted_total_is_detected(trace: Trace, delta: int) -> None:
+    findings = proven(corrupt_total(trace, delta))
+    discrepancies = [f for f in findings if f.code == "TOTAL_COUNT_DISCREPANCY"]
+
+    assert len(discrepancies) == 1
+    assert "went missing" not in discrepancies[0].message.replace(
+        "not a count of records that went missing", ""
+    )

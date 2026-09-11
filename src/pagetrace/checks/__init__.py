@@ -23,6 +23,7 @@ from pagetrace.checks.sequence import (
     check_offset_progression,
     check_page_progression,
 )
+from pagetrace.checks.totals import check_total_discrepancy
 from pagetrace.model import Finding, Trace, sort_findings
 
 # A diff of this tuple is the complete list of what PageTrace can say.
@@ -37,6 +38,7 @@ CHECKS: tuple[Check, ...] = (
     check_trace_ends_with_has_more,
     check_empty_page_with_has_more,
     check_trace_ends_with_continuation,
+    check_total_discrepancy,
 )
 
 
