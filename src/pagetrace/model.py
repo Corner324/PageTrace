@@ -94,6 +94,25 @@ class Observation:
             return None
         return canonical_text(self.value)
 
+    @property
+    def int_value(self) -> int | None:
+        """The observed value as an integer, or None when it is not one.
+
+        A query parameter arrives as text, so "3" is an integer observation and 3 is the same
+        observation. `True` is not, even though Python says `isinstance(True, int)`, and neither
+        is "3.0": inventing a rounding rule for someone else's page number is a claim.
+        """
+        if not self.observed or isinstance(self.value, bool):
+            return None
+        if isinstance(self.value, int):
+            return self.value
+        if isinstance(self.value, str):
+            text = self.value.strip()
+            body = text[1:] if text[:1] in {"-", "+"} else text
+            if body.isdigit():
+                return int(text)
+        return None
+
     def same_as(self, other: Observation) -> bool:
         """True when both are observed non-null values with the same canonical text."""
         mine, theirs = self.text, other.text

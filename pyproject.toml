@@ -72,6 +72,7 @@ reportMissingTypeStubs = true
 # ---------------------------------------------------------------- pytest
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["."]  # so tests can import the shared builders in tests/factories.py
 addopts = "-ra --strict-markers"
 markers = [
   "acceptance: end-to-end CLI tests",

@@ -100,7 +100,7 @@ def _build(record: dict[str, Any], line_number: int, index: int) -> RawObservati
         index=index,
         method=method if isinstance(method, str) else "GET",
         url=url,
-        query=_query_of(request, url),
+        query=query_of(request, url),
         status=status,
         headers=filter_headers(response.get("headers")),
         body=response.get("body"),
@@ -120,7 +120,7 @@ def _require_object(record: dict[str, Any], name: str, line_number: int) -> dict
     return value  # pyright: ignore[reportUnknownVariableType]
 
 
-def _query_of(request: dict[str, Any], url: str) -> dict[str, str | list[str]]:
+def query_of(request: dict[str, Any], url: str) -> dict[str, str | list[str]]:
     """Explicit `query` wins; otherwise the query string of the URL is parsed.
 
     A parameter that appears more than once becomes a list, so a selector resolves it to
