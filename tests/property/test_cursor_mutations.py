@@ -10,9 +10,11 @@ from hypothesis import assume, given
 from hypothesis import strategies as st
 from tests.property.strategies import (
     change_next_cursor,
+    drop_last_page,
     duplicate_item,
     freeze_cursor,
     insert_cursor_cycle,
+    set_has_more_true_on_final_page,
     valid_trace,
 )
 
@@ -91,3 +93,15 @@ def test_a_duplicated_item_is_detected(trace: Trace, data: st.DataObject) -> Non
 
     assert len(duplicates) == 1
     assert duplicates[0].affected_pages == (source, destination)
+
+
+@given(valid_trace(min_pages=2))
+def test_has_more_on_the_final_page_is_detected(trace: Trace) -> None:
+    findings = proven(set_has_more_true_on_final_page(trace))
+    assert "TRACE_ENDS_WITH_HAS_MORE" in codes(findings)
+
+
+@given(valid_trace(min_pages=2))
+def test_a_dropped_last_page_leaves_an_unused_continuation(trace: Trace) -> None:
+    findings = proven(drop_last_page(trace))
+    assert "TRACE_ENDS_WITH_CONTINUATION" in codes(findings)

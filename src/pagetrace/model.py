@@ -207,6 +207,11 @@ class Page:
         """Evidence for one of this page's observations, with the page-qualified path."""
         return Evidence(path=f"page[{self.index}].{observation.path}", value=observation.value)
 
+    @property
+    def item_count_evidence(self) -> Evidence:
+        """How many items this page returned, as evidence. None when that is not observable."""
+        return Evidence(path=f"page[{self.index}].response.items.count", value=self.items.count)
+
 
 @dataclass(frozen=True, slots=True)
 class Trace:
