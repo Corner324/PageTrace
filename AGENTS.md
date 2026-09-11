@@ -11,8 +11,12 @@ uv run ruff format --check .  # format check (never auto-apply in a PR you did n
 uv run pyright                # strict type check
 uv run pytest                 # unit + integration + acceptance + bounded property tests
 uv run pytest --cov --cov-branch --cov-fail-under=90
-uv build && uv run --isolated --with dist/*.whl pagetrace --version
+uv build                      # wheel + sdist
+uv run python -m benchmarks.bench_pipeline --smoke
 ```
+
+Mutation testing (`uv run mutmut run`) is Linux only and runs nightly; it exits immediately on
+Windows.
 
 All of these must pass before you report a task as done. Paste the exact commands you ran.
 
@@ -42,6 +46,22 @@ If the task conflicts with these, stop and say so. Do not resolve the conflict s
   and the PR field `Spec impact`.
 - Never print or log headers, cookies, or raw bodies. Rendered values are escaped and truncated.
 - Scratch files go to `.work/` (gitignored). Never commit plans, transcripts or reasoning.
+
+## Where things live
+
+| Question | File |
+| -------- | ---- |
+| what may be claimed, and when it may not | `specs/invariants.md` |
+| what the tool does and refuses to do | `specs/product.md` |
+| module boundaries and import direction | `docs/architecture.md` |
+| which test layer a case belongs in | `docs/testing.md` |
+| limits, allowlists, display rules | `docs/security.md` |
+| measured numbers and the gap to targets | `docs/performance.md` |
+
+Adding a detector, in order: an entry in `specs/invariants.md` with its non-claim conditions,
+then the oracle (unit tests plus a property), then the detector, then one line in the `CHECKS`
+tuple and one in `INVARIANT_IDS`. The spec-consistency test in
+`tests/integration/test_junit_report.py` fails if the last step is forgotten.
 
 ## Roles
 
