@@ -37,16 +37,38 @@ Profiles live in `tests/conftest.py`: `pr` (200 examples, derandomized) and `nig
 
 ## Mutation testing
 
-`uv run mutmut run` over `checks/`, `normalize.py`, `model.py`, against the unit tests only: a
-mutant has to be killed hundreds of times over, and the property suite costs seconds per run.
+`uv run mutmut run` over `src/pagetrace/` minus the renderers and the argparse wiring, against
+the unit tests only: a mutant has to be killed hundreds of times over, and the property suite
+costs seconds per run.
 
-**mutmut does not run on Windows** (it says so and exits). The nightly job on Linux is therefore
-the only place mutation numbers come from, and the maintainer cannot reproduce them locally on a
-Windows machine. That is a known gap, not a claim that the numbers were checked by hand.
+mutmut refuses to run on Windows and says so. The nightly job is on ubuntu and calls it
+directly. On a Windows machine it needs a Linux container:
 
-Policy: establish a baseline first, then "no regression from baseline", then core score >= 85%
-with equivalent mutants excluded by hand. Not a PR gate, and `continue-on-error` until the
-baseline exists.
+```
+docker run --rm -v "$PWD":/src:ro python:3.13-slim bash -c '
+  pip install -q uv &&
+  mkdir /work && cd /src &&
+  tar cf - --exclude=./.venv --exclude=./.git . | (cd /work && tar xf -) &&
+  cd /work && uv sync --frozen && uv run mutmut run && uv run mutmut results'
+```
+
+### Baseline, 2026-09-12
+
+1722 mutants, 1342 killed, 380 survived: **77.9%**. The run takes about six minutes at
+46 mutations/second.
+
+The survivors are not 380 holes. Sorted by hand:
+
+| Kind | Count | Verdict |
+| ---- | ----: | ------- |
+| A string literal inside a finding's `message` | 69 | Expected. Messages are asserted nowhere on purpose: they carry no trace values, and pinning their wording in unit tests would make every copy edit a test edit. The golden snapshots hold the wording instead. |
+| A `Finding` field set to `None` (`severity`, `invariant`, `code`) | 77 | An artifact of running against `tests/unit/` only. The golden and JSON-schema tests assert these fields; they are simply not in the selection. |
+| `continue` swapped for `break` in a detector loop | 19 | **Real.** No test has two unobservable transitions with a checkable one behind them, so skipping and stopping are indistinguishable. |
+| Arithmetic and comparison flips | 27 | **Mostly real.** The insufficient-evidence counters are never asserted with a number, only with a code. |
+| Everything else (`normalize`, `inputs`, `selectors` internals) | 188 | Mixed. The Link-header splitters carry most of them: the parser is table-driven on characters, and the tests exercise realistic headers rather than the character classes. |
+
+Policy from here: no regression from 77.9%, then core score >= 85% with equivalent mutants
+excluded by hand. Not a PR gate, and `continue-on-error` in CI.
 
 ## Fuzzing the parser boundary
 
