@@ -1,0 +1,41 @@
+name: Nightly
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  extended-pbt:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync
+      - run: uv run pytest -m "" tests/property tests/unit
+        env:
+          HYPOTHESIS_PROFILE: nightly
+
+  mutation:
+    runs-on: ubuntu-latest
+    continue-on-error: true  # advisory until a baseline exists (docs/testing.md)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync
+      - run: uv run mutmut run || true
+      - run: uv run mutmut results
+
+  python-prerelease:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.15"
+      - run: uv sync
+      - run: uv run pytest

@@ -1,0 +1,38 @@
+name: Bug
+description: PageTrace produced a wrong, missing, or over-claimed finding, or crashed.
+labels: [bug]
+body:
+  - type: dropdown
+    id: kind
+    attributes:
+      label: Kind
+      options:
+        - False positive (finding on a valid trace)
+        - False negative (violation not reported)
+        - Over-claim (certainty stronger than evidence)
+        - Crash / traceback
+        - Wrong output format
+    validations:
+      required: true
+  - type: textarea
+    id: trace
+    attributes:
+      label: Minimal trace
+      description: Smallest JSONL that reproduces it. Redact cursors and IDs; never paste headers or real bodies.
+      render: json
+    validations:
+      required: true
+  - type: input
+    id: command
+    attributes:
+      label: Exact command
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected vs actual
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: pagetrace --version

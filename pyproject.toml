@@ -1,0 +1,93 @@
+[project]
+name = "pagetrace"
+version = "0.0.1"
+description = "Offline checker for API pagination traces. Never claims more than the trace proves."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.11"
+authors = [{ name = "PageTrace maintainers" }]
+classifiers = [
+  "Development Status :: 2 - Pre-Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Developers",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+  "Topic :: Software Development :: Testing",
+  "Typing :: Typed",
+]
+# Runtime dependencies: none on purpose. Every addition needs an ADR-level justification
+# (see docs/engineering-principles.md #5). Planned, not yet added: RFC 9535 JSONPath, ijson.
+dependencies = []
+
+[project.scripts]
+pagetrace = "pagetrace.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/OWNER/pagetrace"
+Changelog = "https://github.com/OWNER/pagetrace/blob/main/CHANGELOG.md"
+
+[build-system]
+requires = ["uv_build>=0.11,<0.12"]
+build-backend = "uv_build"
+
+[dependency-groups]
+dev = [
+  "pytest>=8",
+  "pytest-cov>=6",
+  "hypothesis>=6.130",
+  "ruff>=0.12",
+  "pyright>=1.1.400",
+  "jsonschema>=4.23",
+  "mutmut>=3",
+]
+
+# ---------------------------------------------------------------- ruff
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "N", "S", "C4", "SIM", "RUF", "PT", "T20"]
+ignore = ["S101"]  # assert is the test oracle
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S", "T20"]
+"benchmarks/**" = ["T20"]
+"src/pagetrace/cli.py" = ["T20"]
+"src/pagetrace/render/**" = ["T20"]
+
+# ---------------------------------------------------------------- pyright
+[tool.pyright]
+include = ["src", "tests"]
+typeCheckingMode = "strict"
+pythonVersion = "3.11"
+reportMissingTypeStubs = true
+
+# ---------------------------------------------------------------- pytest
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra --strict-markers"
+markers = [
+  "acceptance: end-to-end CLI tests",
+  "slow: only in nightly / extended profile",
+]
+
+# ---------------------------------------------------------------- coverage
+[tool.coverage.run]
+branch = true
+source = ["pagetrace"]
+omit = ["*/__main__.py"]
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+exclude_also = ["if TYPE_CHECKING:", "raise NotImplementedError"]
+
+# ---------------------------------------------------------------- mutmut
+[tool.mutmut]
+paths_to_mutate = ["src/pagetrace/checks/", "src/pagetrace/normalize.py", "src/pagetrace/model.py"]
+tests_dir = ["tests/unit/", "tests/property/"]

@@ -1,0 +1,48 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv lock --check
+      - run: uv sync
+      - run: uv run ruff check . && uv run ruff format --check . && uv run pyright
+      - run: uv run pytest --cov --cov-branch
+        env:
+          HYPOTHESIS_PROFILE: nightly
+      - run: uv build
+      - run: |
+          uv venv /tmp/smoke
+          uv pip install --python /tmp/smoke/bin/python dist/*.whl
+          /tmp/smoke/bin/pagetrace --version
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: pypi
+    permissions:
+      id-token: write   # PyPI Trusted Publishing (OIDC); no API token anywhere
+      attestations: write
+      contents: read
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: actions/attest-build-provenance@v2
+        with:
+          subject-path: "dist/*"
+      - uses: pypa/gh-action-pypi-publish@release/v1
