@@ -10,6 +10,7 @@ from hypothesis import assume, given
 from hypothesis import strategies as st
 from tests.property.strategies import (
     change_next_cursor,
+    duplicate_item,
     freeze_cursor,
     insert_cursor_cycle,
     valid_trace,
@@ -77,3 +78,16 @@ def test_one_broken_property_produces_one_kind_of_finding(
     """A single defect must not set off half the registry."""
     index = data.draw(st.integers(min_value=0, max_value=trace.page_count - 2))
     assert len(codes(proven(change_next_cursor(trace, index)))) == 1
+
+
+@given(valid_trace(min_pages=2), st.data())
+def test_a_duplicated_item_is_detected(trace: Trace, data: st.DataObject) -> None:
+    source = data.draw(st.integers(min_value=0, max_value=trace.page_count - 2))
+    assume(trace.pages[source].items.identities)
+    destination = data.draw(st.integers(min_value=source + 1, max_value=trace.page_count - 1))
+
+    findings = proven(duplicate_item(trace, source, destination))
+    duplicates = [f for f in findings if f.code == "DUPLICATE_ITEM_ACROSS_PAGES"]
+
+    assert len(duplicates) == 1
+    assert duplicates[0].affected_pages == (source, destination)

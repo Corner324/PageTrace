@@ -12,6 +12,7 @@ from pagetrace.checks.cursors import (
     check_cursor_cycle,
     check_cursor_stalled,
 )
+from pagetrace.checks.items import check_duplicate_items
 from pagetrace.model import Finding, Trace, sort_findings
 
 # A diff of this tuple is the complete list of what PageTrace can say.
@@ -19,6 +20,7 @@ CHECKS: tuple[Check, ...] = (
     check_cursor_continuation,
     check_cursor_stalled,
     check_cursor_cycle,
+    check_duplicate_items,
 )
 
 
