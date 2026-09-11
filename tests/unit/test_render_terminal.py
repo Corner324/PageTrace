@@ -33,6 +33,7 @@ def test_control_characters_are_escaped() -> None:
 
 def test_long_values_are_truncated_but_the_true_length_is_kept() -> None:
     shown = display("x" * 500, limit=10)
+    assert shown.value == "x" * 10
     assert shown.text == '"xxxxxxxxxx..."'
     assert shown.truncated
     assert shown.length == 500
