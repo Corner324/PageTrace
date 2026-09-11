@@ -50,7 +50,7 @@ dev = [
 [tool.ruff]
 line-length = 100
 target-version = "py311"
-src = ["src", "tests"]
+src = ["src", "tests", "benchmarks"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "N", "S", "C4", "SIM", "RUF", "PT", "T20"]
@@ -64,7 +64,7 @@ ignore = ["S101"]  # assert is the test oracle
 
 # ---------------------------------------------------------------- pyright
 [tool.pyright]
-include = ["src", "tests"]
+include = ["src", "tests", "benchmarks"]
 typeCheckingMode = "strict"
 pythonVersion = "3.11"
 reportMissingTypeStubs = true
@@ -92,5 +92,9 @@ exclude_also = ["if TYPE_CHECKING:", "raise NotImplementedError"]
 
 # ---------------------------------------------------------------- mutmut
 [tool.mutmut]
+# The invariant engine and the two modules it rests on. Renderers and argparse wiring are not
+# worth the budget (docs/testing.md).
 paths_to_mutate = ["src/pagetrace/checks/", "src/pagetrace/normalize.py", "src/pagetrace/model.py"]
-tests_dir = ["tests/unit/", "tests/property/"]
+# Unit tests only: a mutant has to be killed hundreds of times over, and the property suite takes
+# seconds per run. The property tests still guard the same code in CI, just not once per mutant.
+tests_dir = ["tests/unit/"]

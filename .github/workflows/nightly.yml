@@ -29,6 +29,18 @@ jobs:
       - run: uv run mutmut run || true
       - run: uv run mutmut results
 
+  benchmarks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+      - run: uv sync
+      - run: uv run python -m benchmarks.bench_pipeline --json benchmark-results/nightly.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-results
+          path: benchmark-results/
+
   python-prerelease:
     runs-on: ubuntu-latest
     continue-on-error: true

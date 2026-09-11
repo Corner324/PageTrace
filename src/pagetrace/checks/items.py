@@ -26,9 +26,10 @@ def check_duplicate_items(trace: Trace) -> Iterator[Finding]:
         unidentified += page.items.unidentified
 
         for identity in page.items.identities:
-            earlier = first_seen.get(identity.text)
+            text = identity.text  # a property; computing it once per item matters at scale
+            earlier = first_seen.get(text)
             if earlier is None:
-                first_seen[identity.text] = identity
+                first_seen[text] = identity
                 continue
             if earlier.page_index == identity.page_index:
                 # A repeat inside one response says nothing about pagination.

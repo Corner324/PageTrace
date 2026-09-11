@@ -48,6 +48,17 @@ jobs:
       - name: Validate JSON report schema is itself valid
         run: uv run python -c "import json, jsonschema; jsonschema.Draft202012Validator.check_schema(json.load(open('specs/formats/report-json-v1.schema.json')))"
 
+  benchmark-smoke:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync
+      # Only a gross regression fails here; a shared runner cannot measure a few percent.
+      - run: uv run python -m benchmarks.bench_pipeline --smoke
+
   build:
     runs-on: ubuntu-latest
     steps:

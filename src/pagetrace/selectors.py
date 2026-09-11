@@ -7,6 +7,7 @@ result is one of the not-observed statuses, and nothing may be proven from it
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
@@ -29,6 +30,20 @@ _ENV = JSONPathEnvironment(strict=True)
 
 _SCALAR_TYPES = (str, int, float, bool)
 
+# `$.id` and `$['id']` are one key lookup. The engine answers them correctly but builds a match
+# object with a canonical path string for every node, which is most of the cost of reading a
+# million item ids. A single name segment is resolved directly instead; the two paths are held
+# to the same answers by a differential property test (tests/property/test_selector_fast_path.py).
+_SINGLE_NAME = re.compile(r"^\$(?:\.([A-Za-z_][A-Za-z0-9_]*)|\['([^'\\]*)'\])$")
+
+
+def single_name(expression: str) -> str | None:
+    """The one key an expression reads, when that is all it does."""
+    match = _SINGLE_NAME.match(expression.strip())
+    if match is None:
+        return None
+    return match.group(1) if match.group(1) is not None else match.group(2)
+
 
 @dataclass(frozen=True, slots=True)
 class Selector:
@@ -37,16 +52,27 @@ class Selector:
     flag: str
     expression: str
     query: JSONPath | CompoundJSONPath
+    field: str | None = None
 
     @classmethod
     def compile(cls, flag: str, expression: str) -> Selector:
         try:
-            return cls(flag=flag, expression=expression, query=_ENV.compile(expression))
+            compiled = _ENV.compile(expression)
         except JSONPathError as exc:
             raise PageTraceError(f"{flag}: invalid JSONPath {expression!r}: {exc}") from exc
+        return cls(
+            flag=flag,
+            expression=expression,
+            query=compiled,
+            field=single_name(expression),
+        )
 
 
 def _values(selector: Selector, data: object) -> list[Any]:
+    if selector.field is not None:
+        if isinstance(data, dict) and selector.field in data:
+            return [data[selector.field]]  # pyright: ignore[reportUnknownArgumentType, reportUnknownVariableType]
+        return []
     # finditer accepts any JSON value; a non-container simply yields no nodes.
     return [match.value for match in selector.query.finditer(data)]  # pyright: ignore[reportArgumentType]
 
@@ -106,9 +132,11 @@ def select_items(
     identities: list[ItemIdentity] = []
     unidentified = 0
     for item_index, element in enumerate(elements):
-        identity = select_scalar(id_selector, element, "id")
-        if identity.observed and identity.value is not None:
-            identities.append(ItemIdentity(page_index, item_index, identity.value))
+        # Deliberately not select_scalar: one Observation per item is a million objects on a
+        # large trace, and nothing here needs the reason an id failed to resolve.
+        found = _values(id_selector, element) if id_selector is not None else []
+        if len(found) == 1 and found[0] is not None and isinstance(found[0], _SCALAR_TYPES):
+            identities.append(ItemIdentity(page_index, item_index, found[0]))
         else:
             unidentified += 1
 

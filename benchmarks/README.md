@@ -1,10 +1,14 @@
 # Benchmarks
 
-Written at step 25 of the development sequence, after the first detectors exist.
+```bash
+uv run python -m benchmarks.bench_pipeline --smoke
+uv run python -m benchmarks.bench_pipeline --json benchmark-results/latest.json
+```
 
-- `generate.py`: builds the corpus described in `docs/performance.md` programmatically. Nothing
-  large is committed.
-- `bench_pipeline.py`: runs parse -> normalize -> check on each corpus entry, reports median
-  wall time and peak RSS, writes `benchmark-results/` (gitignored).
+- `generate.py` builds the corpus described in `docs/performance.md` in memory. Nothing large is
+  committed, which is also why a hundred thousand pages is cheap to test.
+- `bench_pipeline.py` times normalize plus checks and reports peak Python allocation. Resident
+  set size would need a dependency; this number is the one a change to PageTrace can move.
 
-PR runs a small smoke; nightly runs the full corpus; release blocks on budget regression.
+Every PR runs `--smoke` and fails only on a gross regression. Nightly runs the full corpus and
+keeps the JSON. Measured results, and the gap to the targets, are in `docs/performance.md`.

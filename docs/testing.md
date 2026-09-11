@@ -37,9 +37,16 @@ Profiles live in `tests/conftest.py`: `pr` (200 examples, derandomized) and `nig
 
 ## Mutation testing
 
-`uv run mutmut run` over `checks/`, `normalize.py`, `model.py`. Nightly and release only.
+`uv run mutmut run` over `checks/`, `normalize.py`, `model.py`, against the unit tests only: a
+mutant has to be killed hundreds of times over, and the property suite costs seconds per run.
+
+**mutmut does not run on Windows** (it says so and exits). The nightly job on Linux is therefore
+the only place mutation numbers come from, and the maintainer cannot reproduce them locally on a
+Windows machine. That is a known gap, not a claim that the numbers were checked by hand.
+
 Policy: establish a baseline first, then "no regression from baseline", then core score >= 85%
-with equivalent mutants excluded by hand. Not a PR gate.
+with equivalent mutants excluded by hand. Not a PR gate, and `continue-on-error` until the
+baseline exists.
 
 ## Fuzzing the parser boundary
 
@@ -49,8 +56,10 @@ message and no traceback. Atheris is deferred until parsers become a real attack
 
 ## Differential testing
 
-Only when an optimized detector replaces a simple one: both must agree on thousands of generated
-traces.
+When a faster path replaces a simple one, both must agree on generated input, not on the handful
+of shapes a person would think to write down. `tests/property/test_selector_fast_path.py` is the
+live example: the single-name selector shortcut is compared against the compiled RFC 9535 query
+on generated documents. An optimization may be faster; it may not be different.
 
 ## Coverage
 
