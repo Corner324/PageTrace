@@ -418,7 +418,7 @@ wheels = [
 
 [[package]]
 name = "pagetrace"
-version = "0.0.1"
+version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "python-jsonpath" },

@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "tool": {
+    "name": "pagetrace",
+    "version": "X.Y.Z"
+  },
+  "input": {
+    "format": "jsonl",
+    "preset": "cursor",
+    "page_count": 3
+  },
+  "summary": {
+    "proven": 0,
+    "suspicious": 0,
+    "insufficient_evidence": 0,
+    "exit_code": 0
+  },
+  "findings": []
+}

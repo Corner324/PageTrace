@@ -196,3 +196,83 @@ def test_deeply_nested_json_is_a_usage_error(tmp_path: Path) -> None:
     path.write_text('{"log": ' + "[" * depth + "]" * depth + "}", encoding="utf-8")
     with pytest.raises(PageTraceError, match="nested too deeply"):
         list(read_har(path))
+
+
+def test_odd_header_and_query_entries_are_skipped(tmp_path: Path) -> None:
+    """A HAR from a proxy can hold anything; odd entries are dropped, not crashed on."""
+    record = entry()
+    record["response"]["headers"] = [
+        "not an object",
+        {"name": "Link", "value": 5},
+        {"value": "no name"},
+        {"name": "Link", "value": "<https://api.example/i>; rel=next"},
+    ]
+    record["request"]["queryString"] = [
+        "not an object",
+        {"name": "cursor", "value": 7},
+        {"name": "cursor", "value": "abc"},
+    ]
+    (observation,) = read_har(write(tmp_path, record))
+
+    assert observation.headers == {"link": "<https://api.example/i>; rel=next"}
+    assert observation.query == {"cursor": "abc"}
+
+
+def test_a_non_list_query_string_falls_back_to_the_url(tmp_path: Path) -> None:
+    record = entry(url="https://api.example/i?page=3")
+    record["request"]["queryString"] = "nonsense"
+    (observation,) = read_har(write(tmp_path, record))
+    assert observation.query == {"page": "3"}
+
+
+def test_content_without_text_has_no_body(tmp_path: Path) -> None:
+    record = entry()
+    record["response"]["content"] = {"mimeType": "application/json", "size": 0}
+    (observation,) = read_har(write(tmp_path, record))
+    assert not observation.body_present
+
+
+def test_bounding_the_encoded_length_bounds_the_decoded_one(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Base64 never expands, so the pre-check is the whole protection, and that is enough."""
+    monkeypatch.setattr("pagetrace.inputs.har.MAX_BODY_BYTES", 64)
+    payload = b"z" * 60
+    encoded = base64.b64encode(payload).decode("ascii")
+    assert len(encoded) > len(payload)
+
+    with pytest.raises(PageTraceError, match="larger than the 64 byte limit"):
+        list(read_har(write(tmp_path, entry(encoding="base64", text=encoded))))
+
+    fitting = base64.b64encode(b"z" * 24).decode("ascii")
+    assert len(fitting) <= 64
+    (observation,) = read_har(write(tmp_path, entry(encoding="base64", text=fitting)))
+    assert observation.body_present
+
+
+def test_a_non_string_url_is_a_usage_error(tmp_path: Path) -> None:
+    record = entry()
+    record["request"]["url"] = 5
+    with pytest.raises(PageTraceError, match=r"no request\.url"):
+        list(read_har(write(tmp_path, record)))
+
+
+def test_invalid_utf8_is_a_usage_error(tmp_path: Path) -> None:
+    path = tmp_path / "bad.har"
+    path.write_bytes(b'{"log": {"entries": ["\xff\xfe"]}}')
+    with pytest.raises(PageTraceError, match="not valid UTF-8"):
+        list(read_har(path))
+
+
+def test_a_non_list_headers_field_is_ignored(tmp_path: Path) -> None:
+    record = entry()
+    record["response"]["headers"] = "nonsense"
+    (observation,) = read_har(write(tmp_path, record))
+    assert observation.headers == {}
+
+
+def test_three_values_for_one_query_parameter_stay_a_list(tmp_path: Path) -> None:
+    record = entry()
+    record["request"]["queryString"] = [{"name": "c", "value": v} for v in ("a", "b", "c")]
+    (observation,) = read_har(write(tmp_path, record))
+    assert observation.query == {"c": ["a", "b", "c"]}

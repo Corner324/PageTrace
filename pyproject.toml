@@ -1,6 +1,6 @@
 [project]
 name = "pagetrace"
-version = "0.0.1"
+version = "0.1.0"
 description = "Offline checker for API pagination traces. Never claims more than the trace proves."
 readme = "README.md"
 license = "MIT"

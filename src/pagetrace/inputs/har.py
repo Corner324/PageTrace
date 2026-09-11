@@ -164,6 +164,12 @@ def _body(response: dict[str, Any], index: int, name: str) -> tuple[object, bool
 
 
 def _decode_base64(text: str, index: int, name: str) -> str:
+    """Decode base64 content, bounding the work before doing it.
+
+    Checking the encoded length is enough: base64 never expands, so 3/4 of a bounded input is
+    bounded too. There is deliberately no second check on the decoded bytes; it could not fire,
+    and an unreachable guard is worse than none because it reads like protection.
+    """
     if len(text) > MAX_BODY_BYTES:
         raise PageTraceError(
             f"{name}: entry {index} body is larger than the {MAX_BODY_BYTES} byte limit"
@@ -172,8 +178,4 @@ def _decode_base64(text: str, index: int, name: str) -> str:
         raw = base64.b64decode(text, validate=True)
     except (binascii.Error, ValueError) as exc:
         raise PageTraceError(f"{name}: entry {index} has invalid base64 content: {exc}") from exc
-    if len(raw) > MAX_BODY_BYTES:
-        raise PageTraceError(
-            f"{name}: entry {index} decodes to more than the {MAX_BODY_BYTES} byte limit"
-        )
     return raw.decode("utf-8", errors="replace")
