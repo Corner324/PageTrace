@@ -1,19 +1,19 @@
 <div align="center">
 
-<img src="docs/assets/header.svg" alt="PageTrace" width="720">
+<img src="https://raw.githubusercontent.com/Corner324/PageTrace/main/docs/assets/header.svg" alt="PageTrace" width="720">
 
-**English** · [Русский](README.ru.md) · [中文](README.zh.md)
+**English** · [Русский](https://github.com/Corner324/PageTrace/blob/main/README.ru.md) · [中文](https://github.com/Corner324/PageTrace/blob/main/README.zh.md)
 
 **Prove what your API pagination actually did. Offline, from a trace you already have.**
 
 [![CI](https://github.com/Corner324/PageTrace/actions/workflows/ci.yml/badge.svg)](https://github.com/Corner324/PageTrace/actions/workflows/ci.yml)
-[![Coverage 98.97%](https://img.shields.io/badge/coverage-98.97%25%20branch-brightgreen.svg)](docs/testing.md)
-[![Tests 425](https://img.shields.io/badge/tests-425-brightgreen.svg)](docs/testing.md)
-[![Zero network](https://img.shields.io/badge/network-none-0aa344.svg)](docs/security.md)
-[![Python 3.11+](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue.svg)](docs/compatibility.md)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Coverage 98.97%](https://img.shields.io/badge/coverage-98.97%25%20branch-brightgreen.svg)](https://github.com/Corner324/PageTrace/blob/main/docs/testing.md)
+[![Tests 425](https://img.shields.io/badge/tests-425-brightgreen.svg)](https://github.com/Corner324/PageTrace/blob/main/docs/testing.md)
+[![Zero network](https://img.shields.io/badge/network-none-0aa344.svg)](https://github.com/Corner324/PageTrace/blob/main/docs/security.md)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13%20%7C%203.14-blue.svg)](https://github.com/Corner324/PageTrace/blob/main/docs/compatibility.md)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/Corner324/PageTrace/blob/main/LICENSE)
 
-[⚡ Install](#-install) · [🔍 How it works](#-how-it-works) · [🎯 Presets](#-presets) · [🧭 What it will not tell you](#-what-it-will-not-tell-you) · [🔒 Security](#-security) · [📐 Invariants](specs/invariants.md)
+[⚡ Install](#-install) · [🔍 How it works](#-how-it-works) · [🎯 Presets](#-presets) · [🧭 What it will not tell you](#-what-it-will-not-tell-you) · [🔒 Security](#-security) · [📐 Invariants](https://github.com/Corner324/PageTrace/blob/main/specs/invariants.md)
 
 </div>
 
@@ -86,14 +86,14 @@ the whole design in one message.
 
 <div align="center">
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/flow.en.dark.svg">
-  <img alt="Recorded trace, parser, normalizer, invariant engine, report. No network call at any step." src="docs/assets/flow.en.light.svg" width="820">
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/Corner324/PageTrace/main/docs/assets/flow.en.dark.svg">
+  <img alt="Recorded trace, parser, normalizer, invariant engine, report. No network call at any step." src="https://raw.githubusercontent.com/Corner324/PageTrace/main/docs/assets/flow.en.light.svg" width="820">
 </picture>
 </div>
 
 The important part is structural, not a promise. A detector receives normalized observations and
 nothing else: `Page` has no field for a raw body or an `authorization` header, so the engine
-physically cannot read one. See [docs/architecture.md](docs/architecture.md).
+physically cannot read one. See [docs/architecture.md](https://github.com/Corner324/PageTrace/blob/main/docs/architecture.md).
 
 ---
 
@@ -103,7 +103,7 @@ physically cannot read one. See [docs/architecture.md](docs/architecture.md).
 > Installing from PyPI is not available yet. The release workflow publishes through Trusted
 > Publishing over OIDC with no token fallback, so nothing can be published until a trusted
 > publisher is configured for the project and the `pypi` environment
-> ([docs/compatibility.md](docs/compatibility.md)).
+> ([docs/compatibility.md](https://github.com/Corner324/PageTrace/blob/main/docs/compatibility.md)).
 
 From a clone, with [uv](https://docs.astral.sh/uv/):
 
@@ -129,7 +129,7 @@ A JSONL trace is one JSON object per line, one per request/response pair, in cap
 ```
 
 `v` and `response.status` are required; `seq` is optional and line order is authoritative. Full
-rules: [specs/formats/jsonl-v1.md](specs/formats/jsonl-v1.md).
+rules: [specs/formats/jsonl-v1.md](https://github.com/Corner324/PageTrace/blob/main/specs/formats/jsonl-v1.md).
 
 <details>
 <summary><b>Or export a HAR from the browser</b> - no code to write, works against anyone's API</summary>
@@ -228,7 +228,7 @@ This section is the point of the project, not a disclaimer.
   parameter can only carry text - or that a truthy `1` or `"true"` means `has_more`. Only a
   boolean counts.
 
-Every claim and every non-claim condition is in [specs/invariants.md](specs/invariants.md), the
+Every claim and every non-claim condition is in [specs/invariants.md](https://github.com/Corner324/PageTrace/blob/main/specs/invariants.md), the
 normative contract for the tool. Eleven invariants, each with written preconditions.
 
 ---
@@ -241,7 +241,7 @@ dropped before the model is built. Raw bodies never reach a detector or a render
 scalars you selected are displayed, with control characters escaped and lengths truncated. Input
 is bounded per line and per decoded body, exceeding a limit is a usage error rather than a
 traceback, and the package contains no networking dependency or code path at all. Threat table
-and limits: [docs/security.md](docs/security.md).
+and limits: [docs/security.md](https://github.com/Corner324/PageTrace/blob/main/docs/security.md).
 
 ---
 
@@ -263,7 +263,7 @@ the third digit.
 > 1k pages / 100k ids wants 2 s and takes 2.6 s; 10k / 1M wants 10 s and takes 28.3 s, about 3x
 > over; the 100k / 5M stretch target wants 60 s and takes 120.8 s, about 2x over. Both memory
 > targets are met with room to spare. Full table and reasoning:
-> [docs/performance.md](docs/performance.md).
+> [docs/performance.md](https://github.com/Corner324/PageTrace/blob/main/docs/performance.md).
 
 ---
 
@@ -277,18 +277,18 @@ uv run ruff check . && uv run ruff format --check . && uv run pyright && uv run 
 property suite in `tests/property/` is the main correctness layer: a valid generated trace must
 produce no `PROVEN` finding, and each mutation operator must wake exactly one detector. Mutation
 score is 77.9% against the unit tests as of 2026-09-12, with the survivors sorted by hand in
-[docs/testing.md](docs/testing.md); mutmut refuses to run on Windows, so that run came from a
+[docs/testing.md](https://github.com/Corner324/PageTrace/blob/main/docs/testing.md); mutmut refuses to run on Windows, so that run came from a
 Linux container.
 
-Before a new detector: an entry in [specs/invariants.md](specs/invariants.md) with its non-claim
-conditions, then the test oracle, then the code. [CONTRIBUTING.md](CONTRIBUTING.md) has the
-workflow and the definition of done, [AGENTS.md](AGENTS.md) the same for coding agents, and the
-rest is in [docs/architecture.md](docs/architecture.md), [docs/testing.md](docs/testing.md),
-[docs/compatibility.md](docs/compatibility.md), [docs/adr/](docs/adr/) and
-[CHANGELOG.md](CHANGELOG.md).
+Before a new detector: an entry in [specs/invariants.md](https://github.com/Corner324/PageTrace/blob/main/specs/invariants.md) with its non-claim
+conditions, then the test oracle, then the code. [CONTRIBUTING.md](https://github.com/Corner324/PageTrace/blob/main/CONTRIBUTING.md) has the
+workflow and the definition of done, [AGENTS.md](https://github.com/Corner324/PageTrace/blob/main/AGENTS.md) the same for coding agents, and the
+rest is in [docs/architecture.md](https://github.com/Corner324/PageTrace/blob/main/docs/architecture.md), [docs/testing.md](https://github.com/Corner324/PageTrace/blob/main/docs/testing.md),
+[docs/compatibility.md](https://github.com/Corner324/PageTrace/blob/main/docs/compatibility.md), [docs/adr/](https://github.com/Corner324/PageTrace/tree/main/docs/adr/) and
+[CHANGELOG.md](https://github.com/Corner324/PageTrace/blob/main/CHANGELOG.md).
 
 <div align="center">
 
-**MIT** · [LICENSE](LICENSE)
+**MIT** · [LICENSE](https://github.com/Corner324/PageTrace/blob/main/LICENSE)
 
 </div>

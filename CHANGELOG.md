@@ -2,10 +2,7 @@
 
 Format: Keep a Changelog. Versioning: SemVer.
 
-The version in `pyproject.toml` is already `0.1.0`. Pushing the tag `v0.1.0` is what builds,
-attests and publishes it; until then this entry describes what is on `main`.
-
-## [0.1.0] - unreleased
+## [0.1.0] - 2026-09-12
 
 First release. From this version on, finding codes, invariant IDs, CLI flags, exit codes, the
 JSON `schema_version` and the JSONL v1 input format are a public contract
