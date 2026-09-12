@@ -7,6 +7,7 @@
 **证明你的 API 分页到底做了什么。离线运行，只用你手上已有的那份录制。**
 
 [![CI](https://github.com/Corner324/PageTrace/actions/workflows/ci.yml/badge.svg)](https://github.com/Corner324/PageTrace/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/pagetrace.svg)](https://pypi.org/project/pagetrace/)
 [![Coverage 98.97%](https://img.shields.io/badge/coverage-98.97%25%20branch-brightgreen.svg)](docs/testing.md)
 [![Tests 425](https://img.shields.io/badge/tests-425-brightgreen.svg)](docs/testing.md)
 [![Zero network](https://img.shields.io/badge/network-none-0aa344.svg)](docs/security.md)
@@ -94,22 +95,17 @@ PROVEN WARNING DUPLICATE_ITEM_ACROSS_PAGES [INV-ITEM-001] pages 1, 2
 
 ## ⚡ 安装
 
-> [!NOTE]
-> 暂时无法从 PyPI 安装。发布工作流通过 OIDC 上的 Trusted Publishing 发布，且刻意不保留 API
-> token 兜底，因此在为该项目和 `pypi` 环境配置好受信任发布者之前，任何东西都发布不出去
-> （见 [docs/compatibility.md](docs/compatibility.md)）。
+```bash
+pip install pagetrace
+```
 
-从仓库克隆，使用 [uv](https://docs.astral.sh/uv/)：
+如果想要独立命令，`pipx install pagetrace` 或 `uv tool install pagetrace` 效果相同。
+
+要运行本仓库里的示例，请克隆仓库并使用 [uv](https://docs.astral.sh/uv/)：
 
 ```bash
 uv sync
 uv run pagetrace check examples/broken-cursor.jsonl
-```
-
-用 pip 装进你自己的环境，或者用 `pipx install .` 作为独立命令：
-
-```bash
-pip install .
 ```
 
 ---

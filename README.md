@@ -7,6 +7,7 @@
 **Prove what your API pagination actually did. Offline, from a trace you already have.**
 
 [![CI](https://github.com/Corner324/PageTrace/actions/workflows/ci.yml/badge.svg)](https://github.com/Corner324/PageTrace/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/pagetrace.svg)](https://pypi.org/project/pagetrace/)
 [![Coverage 98.97%](https://img.shields.io/badge/coverage-98.97%25%20branch-brightgreen.svg)](https://github.com/Corner324/PageTrace/blob/main/docs/testing.md)
 [![Tests 425](https://img.shields.io/badge/tests-425-brightgreen.svg)](https://github.com/Corner324/PageTrace/blob/main/docs/testing.md)
 [![Zero network](https://img.shields.io/badge/network-none-0aa344.svg)](https://github.com/Corner324/PageTrace/blob/main/docs/security.md)
@@ -99,23 +100,17 @@ physically cannot read one. See [docs/architecture.md](https://github.com/Corner
 
 ## ⚡ Install
 
-> [!NOTE]
-> Installing from PyPI is not available yet. The release workflow publishes through Trusted
-> Publishing over OIDC with no token fallback, so nothing can be published until a trusted
-> publisher is configured for the project and the `pypi` environment
-> ([docs/compatibility.md](https://github.com/Corner324/PageTrace/blob/main/docs/compatibility.md)).
+```bash
+pip install pagetrace
+```
 
-From a clone, with [uv](https://docs.astral.sh/uv/):
+For a standalone command, `pipx install pagetrace` or `uv tool install pagetrace` do the same.
+
+To run the examples from this repository, clone it and use [uv](https://docs.astral.sh/uv/):
 
 ```bash
 uv sync
 uv run pagetrace check examples/broken-cursor.jsonl
-```
-
-With pip into an environment of your own, or `pipx install .` for a standalone command:
-
-```bash
-pip install .
 ```
 
 ---

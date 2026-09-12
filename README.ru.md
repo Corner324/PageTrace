@@ -7,6 +7,7 @@
 **Докажите, что на самом деле сделала пагинация вашего API. Офлайн, по записи, которая у вас уже есть.**
 
 [![CI](https://github.com/Corner324/PageTrace/actions/workflows/ci.yml/badge.svg)](https://github.com/Corner324/PageTrace/actions/workflows/ci.yml)
+[![PyPI](https://img.shields.io/pypi/v/pagetrace.svg)](https://pypi.org/project/pagetrace/)
 [![Coverage 98.97%](https://img.shields.io/badge/coverage-98.97%25%20branch-brightgreen.svg)](docs/testing.md)
 [![Tests 425](https://img.shields.io/badge/tests-425-brightgreen.svg)](docs/testing.md)
 [![Zero network](https://img.shields.io/badge/network-none-0aa344.svg)](docs/security.md)
@@ -99,23 +100,17 @@ PROVEN WARNING DUPLICATE_ITEM_ACROSS_PAGES [INV-ITEM-001] pages 1, 2
 
 ## ⚡ Установка
 
-> [!NOTE]
-> Установки с PyPI пока нет. Релизный workflow публикует через Trusted Publishing поверх OIDC и
-> без запасного варианта с токеном, поэтому опубликовать ничего нельзя, пока для проекта и
-> окружения `pypi` не настроен доверенный издатель
-> ([docs/compatibility.md](docs/compatibility.md)).
+```bash
+pip install pagetrace
+```
 
-Из клона, через [uv](https://docs.astral.sh/uv/):
+Для отдельной команды то же самое делают `pipx install pagetrace` или `uv tool install pagetrace`.
+
+Чтобы запустить примеры из репозитория, склонируйте его и используйте [uv](https://docs.astral.sh/uv/):
 
 ```bash
 uv sync
 uv run pagetrace check examples/broken-cursor.jsonl
-```
-
-Через pip в своё окружение, или `pipx install .` для отдельной команды:
-
-```bash
-pip install .
 ```
 
 ---

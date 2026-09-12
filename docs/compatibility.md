@@ -33,10 +33,10 @@ published via PyPI Trusted Publishing. Never from a laptop.
 2. Push the tag `vX.Y.Z`. That triggers `.github/workflows/release.yml`, which reruns every
    gate with the extended property profile, builds once, smoke-installs the built wheel,
    attests the artifacts, and publishes through OIDC.
-3. Before the first publish ever happens, the PyPI project must have a trusted publisher
-   configured for this repository and the `pypi` environment, and no API token anywhere.
-   Until that is done the publish job is expected to fail, and failing is the correct
-   behavior: there is no token fallback by design.
+3. The `publish` job waits for a required reviewer on the `pypi` environment. Approve it only
+   after `build` has passed. PyPI trusts this repository, the `release.yml` workflow and the
+   `pypi` environment through a trusted publisher; there is no API token anywhere and no
+   token fallback by design. First published this way: 0.1.0, 2026-09-12.
 
 ## Branching
 
