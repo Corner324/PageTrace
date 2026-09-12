@@ -4,7 +4,7 @@
 
 [English](README.md) · [Русский](README.ru.md) · **中文**
 
-**证明你的 API 分页到底做了什么。离线运行，只用你手上已有的那份录制。**
+**用你已经录下的轨迹，查清 API 分页到底做了什么。不访问网络。**
 
 [![CI](https://github.com/Corner324/PageTrace/actions/workflows/ci.yml/badge.svg)](https://github.com/Corner324/PageTrace/actions/workflows/ci.yml)
 [![PyPI](https://img.shields.io/pypi/v/pagetrace.svg)](https://pypi.org/project/pagetrace/)
@@ -22,30 +22,29 @@
 
 ## 💡 为什么需要它
 
-分页出错是悄无声息的。每一页都返回 `200 OK`，循环正常结束，日志里没有任何错误，而导出的数据
-少了四百行。等到一个月后有人去对总数，才发现问题，那时候当初的录制早就没了。
+分页 bug 可以绕过你所有的健康检查。每一页都返回 `200 OK`，循环正常结束，日志里没有报错，
+导出的数据却少了四百行。几周后有人核对总数，你才发现问题，而那时录制早就删掉了。
 
-常用的工具在这里形状不对。集成测试要打真实 API，很快就变得不稳定。日志能给你单个请求，却从不
-给你请求之间的关系，而 bug 恰恰住在关系里：第 3 页拿着第 2 页从未发出过的令牌去请求。用眼睛读
-HAR 这招，能撑到第十二页。
+集成测试要调用线上 API，所以时好时坏。日志把每个请求记成单独一行，bug 却出在两行之间：
+第 3 页发出的令牌，第 2 页从来没有返回过。你可以自己读 HAR 找出这种问题，但轨迹超过十来页
+就读不过来了。
 
-PageTrace 接过你手上已有的那份录制，告诉你它能证明什么。
+PageTrace 读取你手上已有的录制，报告能从中证明什么。
 
-| 你听到的说法 | PageTrace 仅凭一份轨迹就能回答 |
+| 你听到的说法 | PageTrace 能从轨迹里告诉你什么 |
 | ------------ | ------------------------------ |
-| "导出的数据少了几行" | 某一页是否用了上一页从未返回过的令牌；请求序列是否回到了曾到过的状态；录制是不是干脆提前停了 |
-| "任务一直跑不完" | 游标是否卡在同一个值上，或者请求序列是否回到了它去过的状态 |
-| "下游收到了重复数据" | 究竟是哪个条目身份出现在了哪两页上 |
-| "是他们的 API 坏了" | 这份轨迹究竟能把责任归到哪一边，而答案往往是哪一边都不能 |
+| "导出的数据少了几行" | 是否有一页用了上一页没有返回过的令牌；请求序列是否回到了之前的状态；录制是否提前停止 |
+| "任务一直跑不完" | 游标是否卡在同一个值上，或者请求是否回到了已经去过的状态 |
+| "下游收到了重复数据" | 哪个条目身份出现在了哪两页上 |
+| "是他们的 API 坏了" | 轨迹能否支持把责任归给任何一方（很多时候不能） |
 
 > [!IMPORTANT]
-> **唯一的规则：绝不宣称超出轨迹所能证明的东西。**
-> 每条发现都带着自己的确定性，以及它所依据的确切观测。这个工具里任何地方都没有置信度分数。
-> 当证据不足时，它会给出 `INSUFFICIENT_EVIDENCE` 并指明你需要设置哪个命令行标志，而不是去猜。
+> **规则：PageTrace 绝不宣称超出轨迹所能证明的内容。**
+> 每条发现都会给出确定性，并列出它依据的观测。工具里没有置信度分数。如果轨迹缺少某项检查
+> 需要的证据，你会得到 `INSUFFICIENT_EVIDENCE`，以及需要设置的命令行标志名称。
 
-它在三个场合能挣回自己的位置：钉在 CI 的回归测试上，让已被证明的缺陷直接让构建失败；握在手里
-处理线上事故，当同事导出的 HAR 是仅存的证据；以及在接入前对着供应商的 API 跑一遍，那时你的
-结论必须经得起被原话引用回来。
+常见用法有两种：在 CI 的回归测试里，已证明的缺陷让构建失败；或者在线上事故中，同事导出的
+HAR 是唯一剩下的证据。接入供应商的 API 之前，它也能派上用场，你可以把不夸大的发现直接发给对方。
 
 ---
 
@@ -71,10 +70,10 @@ PROVEN WARNING DUPLICATE_ITEM_ACROSS_PAGES [INV-ITEM-001] pages 1, 2
 2 proven, 0 suspicious, 0 insufficient evidence
 ```
 
-退出码为 1。请注意第二条发现拒绝做什么：它把重复当作事实报告出来，却不称其为分页 bug，因为任何
-轨迹都不可能携带唯一性契约。整个设计意图，就浓缩在这一条消息里。
+命令以退出码 1 结束。第二条发现报告了一个重复条目，到此为止。轨迹里没有唯一性契约，所以
+PageTrace 不把这个重复称为分页 bug。
 
-`examples/clean-cursor.jsonl` 是同一次运行但没有缺陷，退出码为 0。
+`examples/clean-cursor.jsonl` 是同一次运行去掉缺陷后的版本，退出码为 0。
 
 ---
 
@@ -87,9 +86,8 @@ PROVEN WARNING DUPLICATE_ITEM_ACROSS_PAGES [INV-ITEM-001] pages 1, 2
 </picture>
 </div>
 
-这里关键的是结构，而不是一句承诺。检测器只拿到规范化后的观测，别的什么也拿不到：`Page` 既没有
-存放原始响应体的字段，也没有存放 `authorization` 头的字段，所以引擎在物理上就读不到它们。
-详见 [docs/architecture.md](docs/architecture.md)。
+检测器只接收规范化后的观测。`Page` 没有存放原始响应体或 `authorization` 头的字段，所以引擎
+没有办法读到它们。模块结构见 [docs/architecture.md](docs/architecture.md)。
 
 ---
 
@@ -99,9 +97,9 @@ PROVEN WARNING DUPLICATE_ITEM_ACROSS_PAGES [INV-ITEM-001] pages 1, 2
 pip install pagetrace
 ```
 
-如果想要独立命令，`pipx install pagetrace` 或 `uv tool install pagetrace` 效果相同。
+`pipx install pagetrace` 和 `uv tool install pagetrace` 会把它装成独立命令。
 
-要运行本仓库里的示例，请克隆仓库并使用 [uv](https://docs.astral.sh/uv/)：
+要运行示例，请克隆仓库并使用 [uv](https://docs.astral.sh/uv/)：
 
 ```bash
 uv sync
@@ -112,77 +110,78 @@ uv run pagetrace check examples/broken-cursor.jsonl
 
 ## 📼 如何录制轨迹
 
-JSONL 轨迹是每行一个 JSON 对象，每个对象对应一对请求／响应，按录制顺序排列：
+JSONL 轨迹里，每一对请求和响应占一行 JSON 对象，按录制顺序排列：
 
 ```json
 {"v": 1, "seq": 0, "request": {"method": "GET", "url": "https://api.example.com/v1/items?limit=2"}, "response": {"status": 200, "headers": {"content-type": "application/json"}, "body": {"items": [{"id": 1, "name": "item-1"}, {"id": 2, "name": "item-2"}], "next_cursor": "eyJvIjoyfQ", "has_more": true, "total": 5}}}
 ```
 
-`v` 与 `response.status` 必填，`seq` 可选，行顺序具有权威性。完整规则见
+`v` 和 `response.status` 必填。`seq` 可以省略，PageTrace 以行的顺序为准。完整规则见
 [specs/formats/jsonl-v1.md](specs/formats/jsonl-v1.md)。
 
 <details>
-<summary><b>或者从浏览器导出 HAR</b> —— 不用写代码，对任何人的 API 都能用</summary>
+<summary><b>或者从浏览器导出 HAR</b>，适用于任何能在浏览器里打开的 API</summary>
 
 <br>
 
-打开 DevTools 的 Network 标签页，复现一次分页，把请求列表导出为 HAR。浏览器录制会包含页面加载的
-所有资源，所以要先把它过滤到 API 调用：
+在 DevTools 里打开 Network 标签页，把结果一页页翻完，再把请求列表保存为 HAR。文件里还会有
+页面加载的脚本、图片和字体，所以要先筛出 API 调用：
 
 ```bash
 uv run pagetrace check your-capture.har --url-filter /v1/items
 ```
 
-`OPTIONS` 与 `HEAD` 请求在页面编号之前就被丢弃，因此 CORS 预检请求绝不会看起来像一个没能前进的
-客户端。
+PageTrace 在给页面编号之前会丢掉 `OPTIONS` 和 `HEAD` 请求，因此 CORS 预检请求不会被当成
+卡在同一页的客户端。
 
 </details>
 
 > [!WARNING]
-> HAR 里装着真实可用的凭据。PageTrace 只保留一个响应头、从不渲染响应体，但你磁盘上那个文件
-> 仍然含有你的 `Authorization` —— 请把它当成密码对待，不要附到公开的 issue 里。
+> HAR 文件里有仍然有效的凭据。PageTrace 只保留一个响应头，也从不打印响应体，但你磁盘上的文件
+> 依旧包含 `Authorization` 头。请像保管密码一样保管它，不要附到公开的 issue 里。
 
 ---
 
 ## 🎯 预设
 
-选择器是 [RFC 9535](https://www.rfc-editor.org/rfc/rfc9535.html) 的 JSONPath。预设默认值若匹配
-不到任何东西，就解析为"未找到"并且什么也不证明，而不是变成一个猜测。
+选择器使用 [RFC 9535](https://www.rfc-editor.org/rfc/rfc9535.html) 的 JSONPath。如果预设默认值
+什么都没匹配到，PageTrace 会把该值记为未找到，不据此得出任何结论。
 
 | 预设 | 默认选择器 | 适用于 |
 | ---- | ---------- | ------ |
 | `cursor` <sub>默认</sub> | `--cursor $.query.cursor` `--next $.next_cursor` `--items $.items` `--id $.id` `--total $.total` `--has-more $.has_more` | 返回不透明续传令牌的 API |
 | `page` | `--page $.query.page`，以及同样的 items / id / total / has-more | 页码，从 0 或从 1 开始 |
 | `offset` | `--offset $.query.offset`，以及同样的 items / id / total / has-more | offset 与 limit |
-| `link` | 只有 items / id / total / has-more，续传来自 HTTP `Link` 头 | Link 头中的 `rel="next"`（RFC 8288） |
+| `link` | 只有 items / id / total / has-more；下一页来自 HTTP `Link` 头 | Link 头中的 `rel="next"`（RFC 8288） |
 
 > [!TIP]
-> 每个默认值都可以用命令行标志覆盖，`uv run pagetrace check --help` 会把它们连同所属预设一起
-> 打印出来。如果某条发现是 `INSUFFICIENT_EVIDENCE`，该设置哪个标志就写在消息里。
+> 每个默认值都能用对应的标志覆盖。`uv run pagetrace check --help` 按预设列出默认值。发现为
+> `INSUFFICIENT_EVIDENCE` 时，消息里会写明需要设置的标志。
 
 ---
 
 ## 📊 确定性、严重度、退出码
 
-两条独立的轴。确定性是证据支持什么；严重度是若其成立有多要紧。发现永远不是一个概率。
+每条发现有两个彼此独立的评级。确定性说明轨迹对它的支持程度，严重度说明它若成立有多重要。
+两者都不是概率。
 
 | 确定性 | 含义 |
 | ------ | ---- |
-| `PROVEN` | 轨迹本身显示了这一点，且前置条件成立 |
-| `SUSPICIOUS` | 既符合缺陷，**也**符合某种无害的解释 |
-| `INSUFFICIENT_EVIDENCE` | 选择器或轨迹没有提供这项检查所需的东西 |
+| `PROVEN` | 轨迹显示了这一点，且前置条件成立 |
+| `SUSPICIOUS` | 轨迹符合缺陷，也符合某种无害的解释 |
+| `INSUFFICIENT_EVIDENCE` | 选择器或轨迹没有提供检查所需的内容 |
 
 | 退出码 | 含义 |
 | ------ | ---- |
-| `0` | 没有既被证明又足够严重的问题 |
-| `1` | 至少有一条严重度为 `ERROR` 的 `PROVEN` 发现 |
+| `0` | 没有既被证明又严重的发现 |
+| `1` | 至少有一条 `PROVEN` 发现的严重度为 `ERROR` |
 | `2` | 输入或配置无效 |
 
-退出码 1 需要两条轴同时满足。跨页重复条目是 `PROVEN WARNING`，不会让构建失败：这条发现本身
-拒绝断言窗口重叠是不是 bug，若因它而失败，工具就等于宣称了自己在正文里拒绝宣称的东西。一个
-因为"这也许只是缓存"而变红的构建，只会训练人们忽略这个工具。
+退出码 1 需要两个评级同时满足。跨页重复条目是 `PROVEN WARNING`，不会让构建失败。这条发现没有
+把重复称为 bug，而失败的构建等于替它下了这个结论。如果构建因为可能只是缓存造成的现象而变红，
+团队就会开始无视这个工具。
 
-在 CI 里请使用机器可读格式，而不是终端文本：
+在 CI 里请读取 JSON 输出。PageTrace 不保证终端输出格式保持稳定：
 
 ```bash
 uv run pagetrace check examples/broken-cursor.jsonl --format json --output report.json
@@ -192,44 +191,43 @@ uv run pagetrace check examples/broken-cursor.jsonl --format json --output repor
 
 ## 🧭 它不会告诉你什么
 
-这一节是本项目的要点所在，不是一段免责声明。
+下面这些问题 PageTrace 不回答，即使轨迹看起来指向了某个答案。
 
-- **分页永不终止。** 有限的轨迹能证明序列回到了曾经到过的状态，`INV-CURSOR-003` 说的正是这一点。
-  若在 `null` 游标之后回到第 0 页的状态，则降级为 `SUSPICIOUS`，因为两段拼接起来的运行看上去
-  一模一样。
-- **有记录丢失。** `INV-TOTAL-001` 把声明的总数与观测到的条目身份作比较，措辞绝不会是"丢了 N
-  条记录"：PageTrace 并不知道 `total` 统计的是同一个总体，不知道数据集在录制期间没有变动，也
-  不知道两边应用了相同的过滤条件。
-- **API 有错。** `INV-CONT-001` 与 `INV-TRACE-001` 报告的是轨迹在服务端仍提供后续内容时就结束了，
-  既不指认 API，也不指认客户端或录制方。
-- **关于重复条目、超出重复本身的任何结论**，除非有一份轨迹里并不包含的唯一性契约。
-- **关于它读不了的那一页的任何结论。** 非 2xx 响应被排除在所有读取响应体的检查之外，并由
-  `INV-TRACE-002` 统一报告一次，因此一份谁也读不了的轨迹绝不会看起来是干净的。
-- **关于没有真正解析成功的选择器的任何结论。** 匹配不到、匹配到两个、或者落在一个对象上，都是
-  `INSUFFICIENT_EVIDENCE` 并指明是哪个标志，而不是猜测。JSON `null` 是另一种状态：它是一次观测，
-  含义是"服务端声明没有后续"。
-- **`5` 与 `"5"` 有区别**：比较按规范化文本形式进行，因为查询参数只能承载文本。也不会认为 `1`
-  或 `"true"` 表示 `has_more`：只有布尔值才算数。
+- 分页是否会终止。有限的轨迹能显示请求序列回到了之前的状态，`INV-CURSOR-003` 报告的就是这一点。
+  如果在 `null` 游标之后回到第 0 页的状态，这条发现会降为 `SUSPICIOUS`：存进同一个文件的两次
+  运行看起来是一样的。
+- 记录是否丢失。`INV-TOTAL-001` 把声明的总数和观测到的条目身份作比较，消息里不会出现"丢了 N 条
+  记录"。PageTrace 无法知道 `total` 统计的是否是同一批条目、录制期间数据有没有变化、两边是否用了
+  相同的过滤条件。
+- 谁有责任。`INV-CONT-001` 和 `INV-TRACE-001` 报告的是：服务端还在提供后续页面时，轨迹就结束了。
+  它们不指责 API，不指责客户端，也不指责录制的人。
+- 重复条目意味着什么。发现只报告重复本身。要把它叫作 bug，需要一份唯一性契约，而轨迹里没有。
+- 基于读不了的页面的任何结论。读取响应体的检查会跳过非 2xx 响应，`INV-TRACE-002` 会把跳过的
+  请求报告一次，所以全是错误的轨迹不会被当成干净的。
+- 基于没有解析成功的选择器的任何结论。选择器什么都没匹配到、匹配到两个值或指向一个对象时，
+  结果是 `INSUFFICIENT_EVIDENCE`，并写明对应的标志。JSON `null` 算作一次观测：服务端表示没有下一页。
+- `5` 和 `"5"` 是否不同。PageTrace 按文本比较值，因为查询参数只能携带文本。它也不会把 `1` 或
+  `"true"` 当作 `has_more`，只有 JSON 布尔值才算。
 
-每一条宣称和每一条保持沉默的条件都写在 [specs/invariants.md](specs/invariants.md) 里，那是本
-工具的规范性契约。十一条不变量，每一条都写明了前置条件。
+[specs/invariants.md](specs/invariants.md) 列出了全部十一条不变量的宣称内容，以及每个检测器保持
+沉默的条件。工具把这个文件当作契约来遵守。
 
 ---
 
 ## 🔒 安全
 
-HAR 或 JSONL 轨迹是一份不可信、且携带机密的文件。解析器只保留一个响应头 `link`，因为只有一个会
-被读取；`authorization`、`cookie` 以及其他一切都在构建模型之前就被丢弃。原始响应体永远到不了
-检测器或渲染器，因此只会显示你选中的标量，并对控制字符转义、对长度截断。输入按行、按解码后的
-响应体设有上限，超限是一次使用错误而不是 traceback，而且整个包里既没有网络依赖也没有网络代码
-路径。威胁表与各项限制见 [docs/security.md](docs/security.md)。
+请把 HAR 或 JSONL 轨迹当作含有机密的不可信输入。解析器只保留一个响应头 `link`，因为 link
+预设会读取它。`authorization`、`cookie` 和其他头会在构建模型之前被丢弃。检测器和渲染器拿不到
+原始响应体，所以报告里只有你选中的值，控制字符会被转义，过长的值会被截断。PageTrace 限制单行
+长度和解码后的响应体大小，超限输入按使用错误处理，退出码为 2，并且不包含任何网络代码或
+网络依赖。威胁表和各项限制见 [docs/security.md](docs/security.md)。
 
 ---
 
 ## 📈 性能
 
-测量于 2026-09-11，每种形状跑一次，机器为 Windows 11 开发机、CPython 3.12.6；内存是
-`tracemalloc` 报告的 Python 峰值分配量。这里的结论是这些数字的形状，而不是第三位有效数字。
+测量时间 2026-09-11，机器为 Windows 11 开发机，CPython 3.12.6，每种形状跑一次。内存指
+`tracemalloc` 报告的 Python 峰值分配量。再跑一次最后一位数字会变，所以请看比例。
 
 | 形状 | 页数 | 条目数 | 秒 | 峰值 MiB |
 | ---- | ---: | -----: | -: | -------: |
@@ -239,10 +237,10 @@ HAR 或 JSONL 轨迹是一份不可信、且携带机密的文件。解析器只
 | 十万页 | 100 000 | 5 000 000 | 120.8 | 715.4 |
 
 > [!NOTE]
-> 三项时间目标没有达成，并且仍作为目标被写下来，而不是被悄悄放宽：1k 页 / 100k id 的目标是
-> 2 秒，实测 2.6 秒；10k / 1M 的目标是 10 秒，实测 28.3 秒，约为三倍；100k / 5M 的延伸目标是
-> 60 秒，实测 120.8 秒，约为两倍。两项内存目标都有富余地达成。完整表格与推理见
-> [docs/performance.md](docs/performance.md)。
+> PageTrace 有三项时间目标没有达到，项目仍把它们保留为目标。1k 页 / 100k id 应在 2 秒内完成，
+> 实测 2.6 秒。10k / 1M 应在 10 秒内完成，实测 28.3 秒，约为三倍。100k / 5M 的延伸目标是 60 秒，
+> 实测 120.8 秒，约为两倍。峰值内存在两项上限之内：142.8 MiB 对 512 MiB，715.4 MiB 对 2 GiB。
+> 完整表格和分析见 [docs/performance.md](docs/performance.md)。
 
 ---
 
@@ -252,15 +250,15 @@ HAR 或 JSONL 轨迹是一份不可信、且携带机密的文件。解析器只
 uv run ruff check . && uv run ruff format --check . && uv run pyright && uv run pytest
 ```
 
-425 个测试在本地全部通过，分支覆盖率 98.97%，在 Windows 上的 3.11、3.12、3.13 和 3.14 各跑过
-一遍。主要的正确性层是 `tests/property/` 里的性质测试：任何生成的有效轨迹都不得产生 `PROVEN`
-发现，而每个变异算子必须恰好唤醒一个检测器。截至 2026-09-12，针对单元测试的变异得分为 77.9%，
-存活变异体已在 [docs/testing.md](docs/testing.md) 中逐个人工分类；mutmut 拒绝在 Windows 上运行，
-那次运行是在 Linux 容器里完成的。
+全部 425 个测试在本地通过，分支覆盖率 98.97%，环境为 Windows 上的 Python 3.11、3.12、3.13 和
+3.14。`tests/property/` 里的性质测试承担了大部分正确性检查：任何生成的有效轨迹都不能产生
+`PROVEN` 发现，每个变异算子必须恰好触发一个检测器。2026-09-12 针对单元测试的变异得分是 77.9%，
+[docs/testing.md](docs/testing.md) 对存活的变异体做了人工分类。mutmut 不能在 Windows 上运行，
+所以那次运行用的是 Linux 容器。
 
-新增检测器之前：先在 [specs/invariants.md](specs/invariants.md) 写一条包含沉默条件的条目，再写
-测试预言，最后写代码。[CONTRIBUTING.md](CONTRIBUTING.md) 有流程和完成的定义，
-[AGENTS.md](AGENTS.md) 是给编码智能体的同一套规则，其余内容在
+新检测器先在 [specs/invariants.md](specs/invariants.md) 里写一条条目，列出它保持沉默的条件，
+然后写测试预言，最后写代码。[CONTRIBUTING.md](CONTRIBUTING.md) 说明流程和完成标准，
+[AGENTS.md](AGENTS.md) 给编码智能体提供同样的规则。更多内容见
 [docs/architecture.md](docs/architecture.md)、[docs/testing.md](docs/testing.md)、
 [docs/compatibility.md](docs/compatibility.md)、[docs/adr/](docs/adr/) 和
 [CHANGELOG.md](CHANGELOG.md)。
